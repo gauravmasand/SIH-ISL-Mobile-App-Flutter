@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:isl/Services/AuthServices.dart';
 import 'package:isl/pages/MainHomePage.dart';
 import 'package:isl/pages/Welcome/welcome_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -113,8 +114,22 @@ class _CameraScreenState extends State<CameraScreen> {
 
   void _connectToServer() async {
     try {
-      _socket = await Socket.connect('192.168.31.133', 12343);
+
+      // Retrieve the saved JWT token from shared preferences
+      String? token = await AuthService.getToken();
+
+      if (token == null) {
+        print('Error: No JWT token found');
+        return;
+      }
+
+      _socket = await Socket.connect('192.168.1.38', 12343);
       print('Connected to server at 192.168.31.133:12343');
+
+      // Send the token as the first message to the server
+      String authHeader = "Authorization: Bearer $token";
+      _socket.write(authHeader);
+
       _receiveMessagesFromServer();
     } catch (e) {
       print('Failed to connect to server: $e');
@@ -191,28 +206,37 @@ class _CameraScreenState extends State<CameraScreen> {
       appBar: AppBar(title: Text('Camera Streamer')),
       body: Column(
         children: [
-          AspectRatio(
-            aspectRatio: _cameraController.value.aspectRatio,
-            child: CameraPreview(_cameraController),
+          Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.width*1.5,
+            child: AspectRatio(
+              aspectRatio: _cameraController.value.aspectRatio,
+              child: CameraPreview(_cameraController),
+            ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: _isStreaming ? null : _startStreaming,
-                child: Text('Start Streaming'),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: _isStreaming ? _stopStreaming : null,
-                child: Text('Stop Streaming'),
-              ),
-              // SizedBox(height: 20),
-              // Text(
-              //   'Server Message: $_serverMessage',
-              //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              // ),
-            ],
+          Container(
+            color: Colors.amber,
+            height: 100,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Container(
+                  width: 120,
+                  child: ElevatedButton(
+                    onPressed: _isStreaming ? null : _startStreaming,
+                    child: Text('Start'),
+                  ),
+                ),
+                SizedBox(height: 20),
+                Container(
+                  width: 120,
+                  child: ElevatedButton(
+                    onPressed: _stopStreaming,
+                    child: Text('Stop'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

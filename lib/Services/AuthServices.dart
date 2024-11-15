@@ -65,7 +65,7 @@ class AuthService {
 
   }
 
-  Future<String?> getToken() async {
+  static Future<String?> getToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('jwtToken');
   }
