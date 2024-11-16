@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Services/AuthServices.dart';
 import '../main.dart';
+import 'TextToISL/TextToISL.dart';
 import 'Welcome/welcome_screen.dart';
 
 
@@ -43,7 +44,9 @@ class _MainHomePageState extends State<MainHomePage> {
               ),
               SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => TextToISL()));
+                },
                 icon: Icon(Icons.text_fields, size: 24),
                 label: Text("Text to ISL"),
                 style: ElevatedButton.styleFrom(
