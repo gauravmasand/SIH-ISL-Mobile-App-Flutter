@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:isl/pages/MainHomePage.dart';
+import 'package:isl/pages/MainHomePage/MainHomePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../Services/AuthServices.dart';

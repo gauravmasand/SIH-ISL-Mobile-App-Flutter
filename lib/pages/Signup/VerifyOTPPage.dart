@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:isl/pages/MainHomePage.dart';
+import 'package:isl/pages/MainHomePage/MainHomePage.dart';
 import 'package:isl/pages/Welcome/components/welcome_image.dart';
 import 'package:isl/pages/Welcome/welcome_screen.dart';
 

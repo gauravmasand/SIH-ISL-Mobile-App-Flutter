@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:isl/Services/AuthServices.dart';
-import 'package:isl/pages/MainHomePage.dart';
+import 'package:isl/pages/MainHomePage/MainHomePage.dart';
 import 'package:isl/pages/Welcome/welcome_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
