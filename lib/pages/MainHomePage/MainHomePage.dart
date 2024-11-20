@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:isl/pages/TravelPage/TravelPage.dart';
 import '../../main.dart';
+import '../Announcement/AnnouncementBasePage.dart';
+import '../Announcement/TrainAnnouncement.dart';
+import '../GuideAndHelp/GuideAndHelp.dart';
 import '../TextToISL/TextToISL.dart';
+import '../YoutubeToISL/YoutubeToISL.dart';
 import 'components/FeatureCard.dart';
 import 'components/PrimaryActionCard.dart';
 
@@ -94,6 +99,10 @@ class _MainHomePageState extends State<MainHomePage> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(16),
                     onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => TravelPage()),
+                      );
                       // Handle travel mode
                     },
                     child: Stack(
@@ -168,13 +177,17 @@ class _MainHomePageState extends State<MainHomePage> {
                     title: 'Make Announcement',
                     icon: Icons.campaign,
                     color: Colors.orange,
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => AnnouncementBasePage()));
+                    },
                   ),
                   FeatureCard(
                     title: 'YouTube to ISL',
                     icon: Icons.play_circle_filled,
                     color: Colors.red,
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => YouTubeToISLPage()));
+                    },
                   ),
                   FeatureCard(
                     title: 'Learn ISL',
@@ -186,7 +199,9 @@ class _MainHomePageState extends State<MainHomePage> {
                     title: 'Guide & Help',
                     icon: Icons.help_outline,
                     color: Colors.indigo,
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => HelpAndGuidePage()));
+                    },
                   ),
                 ],
               ),
