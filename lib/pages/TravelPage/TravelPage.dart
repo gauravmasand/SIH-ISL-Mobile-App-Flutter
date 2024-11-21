@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class TravelPage extends StatefulWidget {
   const TravelPage({Key? key}) : super(key: key);
@@ -19,6 +20,13 @@ class _TravelPageState extends State<TravelPage> {
   bool isListening = false;
   late CameraController _cameraController;
   bool _isCameraInitialized = false;
+
+
+  // for audio
+  final TextEditingController _textController = TextEditingController();
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  String _speechText = "";
 
   final List<Map<String, List<String>>> quickPhrases = [
     {
@@ -51,6 +59,16 @@ class _TravelPageState extends State<TravelPage> {
   void initState() {
     super.initState();
     _initializeCamera();
+    _speech = stt.SpeechToText();
+
+    // Listen to the status updates and handle when the session ends automatically
+    _speech.statusListener = (status) {
+      if (status == "notListening") {
+        setState(() {
+          _isListening = false;
+        });
+      }
+    };
   }
 
   Future<void> _initializeCamera() async {
@@ -170,6 +188,29 @@ class _TravelPageState extends State<TravelPage> {
     );
   }
 
+  Future<void> _startListening() async {
+    bool available = await _speech.initialize(
+      onStatus: (status) => print("Speech status: $status"),
+      onError: (error) => print("Speech error: $error"),
+    );
+
+    if (available) {
+      setState(() => _isListening = true);
+      _speech.listen(
+        onResult: (result) {
+          setState(() {
+            _textController.text = result.recognizedWords;
+          });
+        },
+      );
+    }
+  }
+
+  void _stopListening() {
+    setState(() => _isListening = false);
+    _speech.stop();
+  }
+
   Widget _buildInputArea() {
     return Container(
       height: 56,
@@ -188,21 +229,25 @@ class _TravelPageState extends State<TravelPage> {
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.mic_none_rounded,
-              color: Colors.grey[700],
-              size: 24,
+          GestureDetector(
+            onTap: _isListening ? _stopListening : _startListening,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: _isListening ? Colors.red[100] : Colors.grey[100],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _isListening ? Icons.mic : Icons.mic_none_rounded,
+                color: _isListening ? Colors.red : Colors.grey[700],
+                size: 24,
+              ),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: TextField(
+              controller: _textController,
               maxLines: 1,
               textInputAction: TextInputAction.send,
               decoration: InputDecoration(
@@ -214,6 +259,8 @@ class _TravelPageState extends State<TravelPage> {
               ),
               onSubmitted: (value) {
                 // Handle submit on keyboard enter
+                print("Message sent: $value");
+                _textController.clear();
               },
             ),
           ),
