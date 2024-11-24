@@ -47,6 +47,7 @@ dependencies:
   avatar_glow: ^3.0.1
   youtube_player_flutter: ^9.1.1
   speech_to_text: ^7.0.0
+  xml: ^6.5.0
 
 dev_dependencies:
   flutter_test:

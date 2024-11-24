@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:webview_flutter/webview_flutter.dart';
 
 class TravelPage extends StatefulWidget {
   const TravelPage({Key? key}) : super(key: key);
@@ -20,7 +21,7 @@ class _TravelPageState extends State<TravelPage> {
   bool isListening = false;
   late CameraController _cameraController;
   bool _isCameraInitialized = false;
-
+  late final WebViewController _controller;
 
   // for audio
   final TextEditingController _textController = TextEditingController();
@@ -55,6 +56,59 @@ class _TravelPageState extends State<TravelPage> {
     },
   ];
 
+  // Custom encode function to ensure spaces are encoded as %20
+  String customUrlEncode(String text) {
+    return text.replaceAll(' ', '%20');
+  }
+
+  void printFutureValue(Future<String?> futureValue) {
+    futureValue.then((result) {
+      if (result != null) {
+        print("This is log of future " + result);
+      } else {
+        print("URL is null");
+      }
+    }).catchError((error) {
+      print("Error fetching current URL: $error");
+    });
+  }
+
+
+  void initWebView(String inputText) async {
+    final String baseUrl = 'http://64.227.148.189:55055';
+    final String text = inputText.isNotEmpty ? customUrlEncode(inputText) : 'Hello are you man';
+    final String encodedUrl = '$baseUrl/text-from-url?text=$text';
+
+    print("check pass 1");
+
+    print("check pass 2");
+
+    print(encodedUrl);
+
+    // If already initialized, simply load the new URL
+    await _controller.setJavaScriptMode(JavaScriptMode.unrestricted).then((_) {
+      print("New URL loaded: $encodedUrl");
+    }).catchError((error) {
+      print("Error loading URL: $error");
+    });
+    // If already initialized, simply load the new URL
+    await _controller.loadRequest(Uri.parse(encodedUrl)).then((_) {
+      print("New URL loaded: $encodedUrl");
+    }).catchError((error) {
+      print("Error loading URL: $error");
+    });
+
+    Future.delayed(Duration(seconds: 1), () {
+      printFutureValue(_controller.currentUrl());
+    });
+
+    print("check pass 3");
+
+    // Clear the TextField after submission
+    _textController.clear();
+  }
+
+
   @override
   void initState() {
     super.initState();
@@ -69,6 +123,11 @@ class _TravelPageState extends State<TravelPage> {
         });
       }
     };
+
+    _controller = WebViewController();
+
+    initWebView("");
+
   }
 
   Future<void> _initializeCamera() async {
@@ -86,7 +145,7 @@ class _TravelPageState extends State<TravelPage> {
           children: [
             // Top Section (Camera/Avatar)
             Expanded(
-              flex: 3,
+              flex: 6,
               child: Stack(
                 children: [
                   Container(
@@ -150,10 +209,10 @@ class _TravelPageState extends State<TravelPage> {
 
   Widget _buildAvatarView() {
     return Container(
-      height: MediaQuery.of(context).size.width*1.3,
+      height: MediaQuery.of(context).size.height,
       color: Colors.white,
       child: Center(
-        child: Text("Avatar will get diaplayed here"),
+        child: WebViewWidget(controller: _controller),
       ),
     );
   }
@@ -206,9 +265,24 @@ class _TravelPageState extends State<TravelPage> {
     }
   }
 
+  // New method to handle text submission
+  void _submitText(String text) {
+    if (text.isNotEmpty) {
+      print("Submitting text: $text");
+      // Call your existing initWebView method to handle submission
+      initWebView(text);
+
+      // Optionally clear the text field after submission
+      _textController.clear();
+    }
+  }
+
   void _stopListening() {
     setState(() => _isListening = false);
     _speech.stop();
+
+    // Automatically submit the text in the _textController when audio stops
+    _submitText(_textController.text);
   }
 
   Widget _buildInputArea() {
@@ -257,10 +331,16 @@ class _TravelPageState extends State<TravelPage> {
                 contentPadding: EdgeInsets.zero,
                 fillColor: Colors.grey[50],
               ),
-              onSubmitted: (value) {
+              onSubmitted: (value) async {
                 // Handle submit on keyboard enter
                 print("Message sent: $value");
-                _textController.clear();
+                // Handle submit on keyboard enter
+                if (value.isNotEmpty) {
+                  print("Message sent after not null: $value");
+                  // Reinitialize the WebView with the new URL
+                  initWebView(value);
+                  _controller.reload();
+                }
               },
             ),
           ),
@@ -268,6 +348,7 @@ class _TravelPageState extends State<TravelPage> {
       ),
     );
   }
+
 
   Widget _buildQuickPhrases() {
     return Container(
