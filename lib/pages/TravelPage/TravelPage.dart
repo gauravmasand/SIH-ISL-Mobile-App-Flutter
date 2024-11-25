@@ -73,10 +73,9 @@ class _TravelPageState extends State<TravelPage> {
     });
   }
 
-
   void initWebView(String inputText) async {
     final String baseUrl = 'http://64.227.148.189:55055';
-    final String text = inputText.isNotEmpty ? customUrlEncode(inputText) : 'Hello are you man';
+    final String text = inputText.isNotEmpty ? customUrlEncode(inputText) : '';
     final String encodedUrl = '$baseUrl/text-from-url?text=$text';
 
     print("check pass 1");

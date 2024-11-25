@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:isl/pages/TravelPage/TravelPage.dart';
 import '../../main.dart';
 import '../Announcement/AnnouncementBasePage.dart';
-import '../Announcement/TrainAnnouncement.dart';
+import '../Announcement/Railway/TrainAnnouncement.dart';
 import '../GuideAndHelp/GuideAndHelp.dart';
+import '../SettingsPage/SettingsPage.dart';
 import '../TextToISL/TextToISL.dart';
 import '../YoutubeToISL/YoutubeToISL.dart';
 import 'components/FeatureCard.dart';
@@ -24,21 +25,37 @@ class _MainHomePageState extends State<MainHomePage> {
         title: const Text(
           "ISL App",
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+            color: Color(0xFF444444), // Subtle dark grey for text
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 2,
+        backgroundColor: Color(0xFFF8F9FA), // Soft neutral background
+        elevation: 0, // No elevation for a minimalist appearance
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: Color(0xFF444444)),
+        //   onPressed: () => Navigator.pop(context),
+        // ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.black87),
+            icon: const Icon(Icons.settings, color: Color(0xFF444444)),
             onPressed: () {
               // Navigate to settings screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              );
             },
           ),
         ],
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(12), // Rounded bottom corners
+          ),
+        ),
+        toolbarHeight: 70, // Taller toolbar for better proportions
+        shadowColor: Colors.grey.withOpacity(0.15), // Subtle shadow
       ),
       body: SingleChildScrollView(
         child: Padding(
