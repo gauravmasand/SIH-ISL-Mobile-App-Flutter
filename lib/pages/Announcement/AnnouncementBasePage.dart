@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:isl/pages/Announcement/Railway/DelayOfTrainAnnouncementPage.dart';
+import 'package:isl/pages/Announcement/Railway/EmergencyAnnouncementPage.dart';
+import 'package:isl/pages/Announcement/Railway/FacilityInfoAnnouncementPage.dart';
+import 'package:isl/pages/Announcement/Railway/PassengerPagingAnnouncement.dart';
+import 'package:isl/pages/Announcement/Railway/SafetyAndSecurityAnnouncementPage.dart';
 import 'Flight/BaggageClaimPage.dart';
-import 'Flight/Emergency.dart';
+import 'Flight/EmergencyPage.dart';
 import 'Flight/FacilityInfoPage.dart';
 import 'Flight/FlightArrivalAnnouncementPage.dart';
 import 'Flight/FlightBoardingAnnouncementPage.dart';
@@ -8,7 +13,10 @@ import 'Flight/FlightDepartureAnnouncementPage.dart';
 import 'Flight/GateChangeAnnouncementPage.dart';
 import 'Flight/PassengerPagingPage.dart';
 import 'Flight/SecurityAnnouncementPage.dart';
-import 'SavedAnnouncementPage.dart';
+import 'Railway/ArrivalAnnouncementPage.dart';
+import 'Railway/DepartureAnnouncementPage.dart';
+import 'Railway/PlatformChangeAnnouncementPage.dart';
+import 'SavedAnnouncement/SavedAnnouncementPage.dart';
 
 class AnnouncementBasePage extends StatelessWidget {
   const AnnouncementBasePage({Key? key}) : super(key: key);
@@ -222,13 +230,14 @@ class AnnouncementBasePage extends StatelessWidget {
       ];
     } else {
       announcementTypes = [
-        {'title': 'Arrival/Departure', 'icon': Icons.train, 'color': const Color(0xFF43A047)},
-        {'title': 'Platform Changes', 'icon': Icons.edit_location, 'color': const Color(0xFFFB8C00)},
-        {'title': 'Delay', 'icon': Icons.access_time, 'color': const Color(0xFFE53935)},
-        {'title': 'Safety & Security', 'icon': Icons.security, 'color': const Color(0xFF1E88E5)},
-        {'title': 'Facility Info', 'icon': Icons.info, 'color': const Color(0xFF00897B)},
-        {'title': 'Passenger Paging', 'icon': Icons.person_search, 'color': const Color(0xFF3949AB)},
-        {'title': 'Emergency', 'icon': Icons.warning, 'color': const Color(0xFF8E24AA)},
+        {'title': 'Arrival', 'icon': Icons.train, 'color': const Color(0xFF43A047), "action": ArrivalAnnouncementPage()},
+        {'title': 'Departure', 'icon': Icons.train, 'color': const Color(0xFF43A047), "action": DepartureAnnouncementPage()},
+        {'title': 'Platform Changes', 'icon': Icons.edit_location, 'color': const Color(0xFFFB8C00), "action": PlatformChangeAnnouncementPage()},
+        {'title': 'Delay', 'icon': Icons.access_time, 'color': const Color(0xFFE53935), "action": DelayOfTrainAnnouncementPage()},
+        {'title': 'Safety & Security', 'icon': Icons.security, 'color': const Color(0xFF1E88E5), "action": SafetyAndSecurityAnnouncementPage()},
+        {'title': 'Facility Info', 'icon': Icons.info, 'color': const Color(0xFF00897B), "action": FacilityInfoAnnouncementPage()},
+        {'title': 'Passenger Paging', 'icon': Icons.person_search, 'color': const Color(0xFF3949AB), "action": PassengerPagingAnnouncementPage()},
+        {'title': 'Emergency', 'icon': Icons.warning, 'color': const Color(0xFF8E24AA), "action": EmergencyAnnouncementPage()},
       ];
     }
 

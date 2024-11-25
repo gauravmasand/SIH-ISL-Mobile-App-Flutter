@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../Services/TextToAnnouncementService.dart';
+
 class FlightArrivalAnnouncementPage extends StatefulWidget {
   const FlightArrivalAnnouncementPage({Key? key}) : super(key: key);
 
@@ -219,6 +221,46 @@ class _FlightArrivalAnnouncementPageState extends State<FlightArrivalAnnouncemen
     );
   }
 
+  String generateArrivalAnnouncement({
+    required BuildContext context,
+    required String airline,
+    required String flightNumber,
+    required String from,
+    required String to,
+    required DateTime arrivalDate,
+    required TimeOfDay arrivalTime,
+    required String arrivalTerminal,
+    required String baggageClaim,
+    String? otherAirline,
+  }) {
+    // Start with a greeting and airline information
+    String announcement = 'Attention, passengers. ';
+    announcement += otherAirline != null && airline == 'Other'
+        ? 'This is an arrival announcement for $otherAirline Airlines flight $flightNumber.'
+        : 'This is an arrival announcement for $airline flight $flightNumber.';
+
+    // Add origin and destination details
+    announcement += ' The flight originated from $from and has arrived in $to.';
+
+    // Add arrival time and date
+    announcement +=
+    ' The flight landed on ${arrivalDate.toString().split(' ')[0]} at ${arrivalTime.format(context)}.';
+
+    // Add terminal and baggage claim information
+    announcement +=
+    ' Passengers can collect their baggage at claim area $baggageClaim, located at arrival terminal $arrivalTerminal.';
+
+    // Closing statement
+    announcement +=
+    ' Thank you for flying with us. We hope you had a pleasant journey and wish you a wonderful day ahead.';
+
+    // Log for debugging
+    print("Generated Arrival Announcement: $announcement");
+
+    // Return the final announcement
+    return announcement.trim();
+  }
+
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
       if (_arrivalDate == null || _arrivalTime == null) {
@@ -231,16 +273,30 @@ class _FlightArrivalAnnouncementPageState extends State<FlightArrivalAnnouncemen
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Arrival announcement saved successfully'),
-          backgroundColor: Colors.green,
-        ),
+      // Generate the arrival announcement
+      String announcement = generateArrivalAnnouncement(
+        context: context,
+        airline: _selectedAirline,
+        flightNumber: _flightNumberController.text,
+        from: _fromController.text,
+        to: _toController.text,
+        arrivalDate: _arrivalDate!,
+        arrivalTime: _arrivalTime!,
+        arrivalTerminal: _arrivalTerminalController.text,
+        baggageClaim: _baggageClaimController.text,
+        otherAirline: _selectedAirline == 'Other' ? _otherAirlineController.text : null,
       );
 
-      Navigator.pop(context);
+      // Navigate to the TextToAnnouncementService page to display the announcement
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TextToAnnouncementService(text: announcement),
+        ),
+      );
     }
   }
+
 
   Widget _buildDropdownField({
     required String label,

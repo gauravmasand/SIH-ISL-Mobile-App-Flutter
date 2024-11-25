@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../Services/TextToAnnouncementService.dart';
+
 class FlightDepartureAnnouncementPage extends StatefulWidget {
   const FlightDepartureAnnouncementPage({Key? key}) : super(key: key);
 
@@ -209,6 +211,44 @@ class _FlightDepartureAnnouncementPageState extends State<FlightDepartureAnnounc
     );
   }
 
+  String generateDepartureAnnouncement({
+    required BuildContext context,
+    required String airline,
+    required String flightNumber,
+    required String from,
+    required String to,
+    required DateTime departureDate,
+    required TimeOfDay departureTime,
+    required String departureTerminal,
+    String? otherAirline,
+  }) {
+    // Start with a greeting and airline information
+    String announcement = 'Attention, passengers. ';
+    announcement += otherAirline != null && airline == 'Other'
+        ? 'This is a departure announcement for $otherAirline Airlines flight $flightNumber.'
+        : 'This is a departure announcement for $airline flight $flightNumber.';
+
+    // Add origin and destination details
+    announcement += ' The flight will be departing from $from and arriving at $to.';
+
+    // Add departure time and date
+    announcement +=
+    ' Departure is scheduled for ${departureDate.toString().split(' ')[0]} at ${departureTime.format(context)}.';
+
+    // Add terminal information
+    announcement += ' Passengers are requested to proceed to departure terminal $departureTerminal.';
+
+    // Closing statement
+    announcement +=
+    ' Please ensure you have your boarding passes and identification ready. Thank you for flying with us, and we wish you a safe and pleasant journey.';
+
+    // Log for debugging
+    print("Generated Departure Announcement: $announcement");
+
+    // Return the final announcement
+    return announcement.trim();
+  }
+
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
       if (_departureDate == null || _departureTime == null) {
@@ -221,16 +261,29 @@ class _FlightDepartureAnnouncementPageState extends State<FlightDepartureAnnounc
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Departure announcement saved successfully'),
-          backgroundColor: Colors.green,
-        ),
+      // Generate the departure announcement
+      String announcement = generateDepartureAnnouncement(
+        context: context,
+        airline: _selectedAirline,
+        flightNumber: _flightNumberController.text,
+        from: _fromController.text,
+        to: _toController.text,
+        departureDate: _departureDate!,
+        departureTime: _departureTime!,
+        departureTerminal: _departureTerminalController.text,
+        otherAirline: _selectedAirline == 'Other' ? _otherAirlineController.text : null,
       );
 
-      Navigator.pop(context);
+      // Navigate to the TextToAnnouncementService page to display the announcement
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TextToAnnouncementService(text: announcement),
+        ),
+      );
     }
   }
+
 
   Widget _buildDropdownField({
     required String label,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../Services/TextToAnnouncementService.dart';
+
 class FlightBoardingAnnouncementPage extends StatefulWidget {
   const FlightBoardingAnnouncementPage({Key? key}) : super(key: key);
 
@@ -204,6 +206,45 @@ class _FlightBoardingAnnouncementPageState extends State<FlightBoardingAnnouncem
     );
   }
 
+
+  String generateBoardingAnnouncement({
+    required BuildContext context,
+    required String airline,
+    required String flightNumber,
+    required String from,
+    required String to,
+    required DateTime boardingDate,
+    required TimeOfDay boardingTime,
+    required String gateNumber,
+    String? otherAirline,
+  }) {
+    // Start with a greeting and airline information
+    String announcement = 'Attention, passengers. ';
+    announcement += otherAirline != null && airline == 'Other'
+        ? 'This is a boarding announcement for $otherAirline Airlines flight $flightNumber.'
+        : 'This is a boarding announcement for $airline flight $flightNumber.';
+
+    // Add origin and destination details
+    announcement += ' The flight will be departing from $from and arriving at $to.';
+
+    // Add boarding time and date
+    announcement +=
+    ' Boarding is scheduled to begin on ${boardingDate.toString().split(' ')[0]} at ${boardingTime.format(context)}.';
+
+    // Add gate information
+    announcement += ' Passengers are requested to proceed to gate $gateNumber.';
+
+    // Closing statement
+    announcement +=
+    ' Please ensure you have your boarding passes and identification ready. Thank you for flying with us, and we wish you a pleasant journey.';
+
+    // Log for debugging
+    print("Generated Boarding Announcement: $announcement");
+
+    // Return the final announcement
+    return announcement.trim();
+  }
+
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
       if (_boardingDate == null || _boardingTime == null) {
@@ -216,14 +257,28 @@ class _FlightBoardingAnnouncementPageState extends State<FlightBoardingAnnouncem
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Boarding announcement saved successfully'),
-          backgroundColor: Colors.green,
-        ),
+      // Generate the boarding announcement
+      String announcement = generateBoardingAnnouncement(
+        context: context, // Pass the BuildContext here
+        airline: _selectedAirline,
+        flightNumber: _flightNumberController.text,
+        from: _fromController.text,
+        to: _toController.text,
+        boardingDate: _boardingDate!,
+        boardingTime: _boardingTime!,
+        gateNumber: _gateController.text,
+        otherAirline: _selectedAirline == 'Other' ? _otherAirlineController.text : null,
       );
 
-      Navigator.pop(context);
+      print("The announcement is " + announcement);
+
+      // Navigate to the TextToAnnouncementService page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TextToAnnouncementService(text: announcement),
+        ),
+      );
     }
   }
 
@@ -313,4 +368,3 @@ class _FlightBoardingAnnouncementPageState extends State<FlightBoardingAnnouncem
     );
   }
 }
-

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../Services/TextToAnnouncementService.dart';
+
 class FacilityInfoPage extends StatefulWidget {
   const FacilityInfoPage({Key? key}) : super(key: key);
 
@@ -184,16 +186,87 @@ class _FacilityInfoPageState extends State<FacilityInfoPage> {
     );
   }
 
+  String generateFacilityInfoAnnouncement({
+    required String facilityArea,
+    required String status,
+    required String impactLevel,
+    required String affectedServices,
+    String? duration,
+    String? alternativeOptions,
+    String? specialInstructions,
+    String? contactInformation,
+  }) {
+    // Start with a formal introduction
+    String announcement = 'Attention, everyone. ';
+    announcement += 'This is an update for the $facilityArea area.';
+
+    // Mention the status
+    announcement += ' The current status is: $status.';
+
+    // Mention impact level
+    announcement += ' The impact level is classified as $impactLevel.';
+
+    // Mention affected services
+    announcement += ' The following services are affected: $affectedServices.';
+
+    // Add duration if provided
+    if (duration != null && duration.isNotEmpty) {
+      announcement += ' The expected duration of this status is $duration.';
+    }
+
+    // Add alternative options if provided
+    if (alternativeOptions != null && alternativeOptions.isNotEmpty) {
+      announcement += ' Alternative options available: $alternativeOptions.';
+    }
+
+    // Add special instructions if provided
+    if (specialInstructions != null && specialInstructions.isNotEmpty) {
+      announcement += ' Special instructions: $specialInstructions.';
+    }
+
+    // Add contact information if provided
+    if (contactInformation != null && contactInformation.isNotEmpty) {
+      announcement += ' For further assistance, please contact: $contactInformation.';
+    }
+
+    // Closing statement
+    announcement +=
+    ' Thank you for your understanding and cooperation. We apologise for any inconvenience caused.';
+
+    // Log for debugging
+    print("Generated Facility Info Announcement: $announcement");
+
+    // Return the final announcement
+    return announcement.trim();
+  }
+
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Facility info announcement saved successfully'),
-          backgroundColor: Colors.green,
-        ),
+      // Generate the facility info announcement
+      String announcement = generateFacilityInfoAnnouncement(
+        facilityArea: _facilityAreaController.text,
+        status: _selectedStatus,
+        impactLevel: _selectedImpactLevel,
+        affectedServices: _affectedServicesController.text,
+        duration: _durationController.text.isNotEmpty ? _durationController.text : null,
+        alternativeOptions: _alternativeOptionsController.text.isNotEmpty
+            ? _alternativeOptionsController.text
+            : null,
+        specialInstructions: _specialInstructionsController.text.isNotEmpty
+            ? _specialInstructionsController.text
+            : null,
+        contactInformation: _contactInformationController.text.isNotEmpty
+            ? _contactInformationController.text
+            : null,
       );
 
-      Navigator.pop(context);
+      // Navigate to a page to display the announcement
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TextToAnnouncementService(text: announcement),
+        ),
+      );
     }
   }
 

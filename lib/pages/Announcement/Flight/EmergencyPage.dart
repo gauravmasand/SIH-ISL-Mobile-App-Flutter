@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../Services/TextToAnnouncementService.dart';
+
 class EmergencyPage extends StatefulWidget {
   const EmergencyPage({Key? key}) : super(key: key);
 
@@ -93,7 +95,7 @@ class _EmergencyPageState extends State<EmergencyPage> {
               items: _severityLevels.map((level) {
                 return DropdownMenuItem<String>(
                   value: level,
-                  child: Text(level),
+                  child: Text(level, style: TextStyle(color: Colors.black87),),
                 );
               }).toList(),
               onChanged: (value) {
@@ -194,16 +196,83 @@ class _EmergencyPageState extends State<EmergencyPage> {
     );
   }
 
+  String generateEmergencyAnnouncement({
+    required String emergencyType,
+    required String severityLevel,
+    required String affectedAreas,
+    required String requiredActions,
+    required String contactNumbers,
+    required String safetyInstructions,
+    required String updates,
+    String? assemblyPoints,
+    String? alternativeRoutes,
+  }) {
+    // Start the announcement with a formal greeting and emergency type
+    String announcement = '''
+      Attention, all passengers and crew. We have an emergency situation there is $emergencyType,
+      classified as $severityLevel severity.
+      ''';
+
+    // Mention affected areas
+    announcement += 'The affected areas are $affectedAreas.\n';
+
+    // Add required actions
+    announcement += 'We request you to take the follow $requiredActions.\n';
+
+    // Mention assembly points if provided
+    if (assemblyPoints != null && assemblyPoints.isNotEmpty) {
+      announcement += 'Please proceed to the following $assemblyPoints assembly points.\n';
+    }
+
+    // Mention safety instructions
+    announcement += 'For your safety, please $safetyInstructions.\n';
+
+    // Add emergency contact numbers for assistance
+    announcement += 'If you need further assistance, contact $contactNumbers.\n';
+
+    // Add updates/status
+    announcement += 'Current status is $updates.\n';
+
+    // Mention alternative routes if applicable
+    if (alternativeRoutes != null && alternativeRoutes.isNotEmpty) {
+      announcement += '$alternativeRoutes is alternative exits.\n';
+    }
+
+    // End with a closing statement
+    announcement += 'Thank you for your cooperation. Please remain calm and follow instructions from the crew.';
+
+    print("This is log of security announcement: " + announcement);
+
+    // Return the formatted announcement
+    return announcement.trim();
+  }
+
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Emergency announcement saved successfully'),
-          backgroundColor: Colors.green,
-        ),
+      // Generate the announcement
+      String announcement = generateEmergencyAnnouncement(
+        emergencyType: _emergencyTypeController.text,
+        severityLevel: _selectedSeverityLevel,
+        affectedAreas: _affectedAreasController.text,
+        requiredActions: _requiredActionsController.text,
+        contactNumbers: _contactNumbersController.text,
+        safetyInstructions: _safetyInstructionsController.text,
+        updates: _updatesController.text,
+        assemblyPoints: _assemblyPointsController.text.isNotEmpty
+            ? _assemblyPointsController.text
+            : null,
+        alternativeRoutes: _alternativeRoutesController.text.isNotEmpty
+            ? _alternativeRoutesController.text
+            : null,
       );
 
-      Navigator.pop(context);
+      // Show the announcement in a Snackbar or save it
+      Navigator.push(context, MaterialPageRoute(builder: (context) => TextToAnnouncementService(
+        text: announcement,
+      )));
+
+      // Optionally navigate back or clear the form
+      // Navigator.pop(context);
     }
   }
 

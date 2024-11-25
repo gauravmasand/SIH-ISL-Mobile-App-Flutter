@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../Services/TextToAnnouncementService.dart';
+
 class SecurityAnnouncementPage extends StatefulWidget {
   const SecurityAnnouncementPage({Key? key}) : super(key: key);
 
@@ -178,18 +180,83 @@ class _SecurityAnnouncementPageState extends State<SecurityAnnouncementPage> {
     );
   }
 
+  String generateSecurityAnnouncement({
+    required String securityZone,
+    required String alertLevel,
+    required String natureOfAlert,
+    required String requiredAction,
+    required String affectedAreas,
+    String? duration,
+    String? specialInstructions,
+    String? contactPerson,
+  }) {
+    // Start with a formal introduction
+    String announcement = 'Attention, everyone. ';
+    announcement +=
+    'There is a security alert in the $securityZone zone. The alert level is classified as $alertLevel.';
+
+    // Mention the nature of the alert
+    announcement += ' The nature of the alert is: $natureOfAlert.';
+
+    // Add required actions
+    announcement += ' Please take the following action: $requiredAction.';
+
+    // Mention affected areas
+    announcement += ' The affected areas are: $affectedAreas.';
+
+    // Add duration if applicable
+    if (duration != null && duration.isNotEmpty) {
+      announcement += ' This alert is expected to last for $duration.';
+    }
+
+    // Add special instructions if provided
+    if (specialInstructions != null && specialInstructions.isNotEmpty) {
+      announcement += ' Note: $specialInstructions.';
+    }
+
+    // Add contact information if provided
+    if (contactPerson != null && contactPerson.isNotEmpty) {
+      announcement += ' For further assistance, please contact: $contactPerson.';
+    }
+
+    // Closing statement
+    announcement +=
+    ' Thank you for your cooperation. Please remain calm and follow the instructions provided.';
+
+    // Log for debugging
+    print("Generated Security Announcement: $announcement");
+
+    // Return the final announcement
+    return announcement.trim();
+  }
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Security announcement saved successfully'),
-          backgroundColor: Colors.green,
-        ),
+      // Generate the security announcement
+      String announcement = generateSecurityAnnouncement(
+        securityZone: _securityZoneController.text,
+        alertLevel: _selectedAlertLevel,
+        natureOfAlert: _natureOfAlertController.text,
+        requiredAction: _requiredActionController.text,
+        affectedAreas: _affectedAreasController.text,
+        duration: _durationController.text.isNotEmpty ? _durationController.text : null,
+        specialInstructions: _specialInstructionsController.text.isNotEmpty
+            ? _specialInstructionsController.text
+            : null,
+        contactPerson: _contactPersonController.text.isNotEmpty
+            ? _contactPersonController.text
+            : null,
       );
 
-      Navigator.pop(context);
+      // Navigate to a page to display the announcement
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TextToAnnouncementService(text: announcement),
+        ),
+      );
     }
   }
+
 
   Widget _buildTextFormField({
     required TextEditingController controller,

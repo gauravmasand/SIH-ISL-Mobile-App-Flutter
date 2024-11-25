@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:isl/Services/TextToAnnouncementService.dart';
 
 class GateChangeAnnouncementPage extends StatefulWidget {
   const GateChangeAnnouncementPage({Key? key}) : super(key: key);
@@ -216,6 +217,51 @@ class _GateChangeAnnouncementPageState extends State<GateChangeAnnouncementPage>
     );
   }
 
+  String generateGateChangeAnnouncement({
+    required BuildContext context,
+    required String airline,
+    required String flightNumber,
+    required String destination,
+    required String originalGate,
+    required String newGate,
+    required TimeOfDay departureTime,
+    String? reason,
+    String? additionalInstructions,
+    String? otherAirline,
+  }) {
+    // Start with a greeting and airline information
+    String announcement = 'Attention, passengers. ';
+    announcement += otherAirline != null && airline == 'Other'
+        ? 'This is an announcement for $otherAirline Airlines flight $flightNumber.'
+        : 'This is an announcement for $airline flight $flightNumber.';
+
+    // Add destination and gate change details
+    announcement += ' The flight to $destination will now depart from gate $newGate instead of gate $originalGate.';
+
+    // Add departure time
+    announcement += ' The departure time remains scheduled for ${departureTime.format(context)}.';
+
+    // Add reason for the change if provided
+    if (reason != null && reason.isNotEmpty) {
+      announcement += ' The gate change is due to $reason.';
+    }
+
+    // Add additional instructions if provided
+    if (additionalInstructions != null && additionalInstructions.isNotEmpty) {
+      announcement += ' Please note: $additionalInstructions.';
+    }
+
+    // Closing statement
+    announcement +=
+    ' We apologise for any inconvenience caused and thank you for your understanding. Please proceed to gate $newGate promptly.';
+
+    // Log for debugging
+    print("Generated Gate Change Announcement: $announcement");
+
+    // Return the final announcement
+    return announcement.trim();
+  }
+
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
       if (_departureTime == null) {
@@ -228,14 +274,29 @@ class _GateChangeAnnouncementPageState extends State<GateChangeAnnouncementPage>
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gate change announcement saved successfully'),
-          backgroundColor: Colors.green,
-        ),
+      // Generate the gate change announcement
+      String announcement = generateGateChangeAnnouncement(
+        context: context,
+        airline: _selectedAirline,
+        flightNumber: _flightNumberController.text,
+        destination: _destinationController.text,
+        originalGate: _originalGateController.text,
+        newGate: _newGateController.text,
+        departureTime: _departureTime!,
+        reason: _reasonController.text.isNotEmpty ? _reasonController.text : null,
+        additionalInstructions: _additionalInstructionsController.text.isNotEmpty
+            ? _additionalInstructionsController.text
+            : null,
+        otherAirline: _selectedAirline == 'Other' ? _otherAirlineController.text : null,
       );
 
-      Navigator.pop(context);
+      // Navigate to a page to display the announcement
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TextToAnnouncementService(text: announcement),
+        ),
+      );
     }
   }
 

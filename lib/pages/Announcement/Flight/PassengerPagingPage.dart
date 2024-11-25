@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../Services/TextToAnnouncementService.dart';
+
 class PassengerPagingPage extends StatefulWidget {
   const PassengerPagingPage({Key? key}) : super(key: key);
 
@@ -186,18 +188,82 @@ class _PassengerPagingPageState extends State<PassengerPagingPage> {
     );
   }
 
+  String generatePassengerPagingAnnouncement({
+    required String passengerName,
+    required String requestingParty,
+    required String locationToReport,
+    required String urgencyLevel,
+    required String messageType,
+    String? flightNumber,
+    String? gateNumber,
+    String? additionalMessage,
+  }) {
+    // Start with a formal greeting
+    String announcement = 'Attention, passengers. ';
+    announcement +=
+    'This is a $messageType message for $passengerName. Requested by $requestingParty, ';
+
+    // Mention the location to report
+    announcement += 'please report to $locationToReport promptly.';
+
+    // Add flight number if applicable
+    if (flightNumber != null && flightNumber.isNotEmpty) {
+      announcement += ' This is regarding flight number $flightNumber.';
+    }
+
+    // Add gate number if applicable
+    if (gateNumber != null && gateNumber.isNotEmpty) {
+      announcement += ' Kindly proceed to gate $gateNumber.';
+    }
+
+    // Add urgency level
+    announcement += ' The urgency level of this message is $urgencyLevel.';
+
+    // Add additional message if provided
+    if (additionalMessage != null && additionalMessage.isNotEmpty) {
+      announcement += ' Note: $additionalMessage.';
+    }
+
+    // Closing statement
+    announcement += ' Thank you for your attention.';
+
+    // Log for debugging
+    print("Generated Passenger Paging Announcement: $announcement");
+
+    // Return the final announcement
+    return announcement.trim();
+  }
+
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Passenger paging announcement saved successfully'),
-          backgroundColor: Colors.green,
-        ),
+      // Generate the passenger paging announcement
+      String announcement = generatePassengerPagingAnnouncement(
+        passengerName: _passengerNameController.text,
+        requestingParty: _requestingPartyController.text,
+        locationToReport: _locationToReportController.text,
+        urgencyLevel: _selectedUrgencyLevel,
+        messageType: _selectedMessageType,
+        flightNumber: _flightNumberController.text.isNotEmpty
+            ? _flightNumberController.text
+            : null,
+        gateNumber: _gateNumberController.text.isNotEmpty
+            ? _gateNumberController.text
+            : null,
+        additionalMessage: _additionalMessageController.text.isNotEmpty
+            ? _additionalMessageController.text
+            : null,
       );
 
-      Navigator.pop(context);
+      // Navigate to a page to display the announcement
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TextToAnnouncementService(text: announcement),
+        ),
+      );
     }
   }
+
 
   Widget _buildTextFormField({
     required TextEditingController controller,

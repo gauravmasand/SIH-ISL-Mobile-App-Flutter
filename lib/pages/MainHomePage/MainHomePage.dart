@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:isl/pages/TravelPage/TravelPage.dart';
 import '../../main.dart';
 import '../Announcement/AnnouncementBasePage.dart';
-import '../Announcement/Railway/TrainAnnouncement.dart';
 import '../GuideAndHelp/GuideAndHelp.dart';
 import '../SettingsPage/SettingsPage.dart';
 import '../TextToISL/TextToISL.dart';

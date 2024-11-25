@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../Services/TextToAnnouncementService.dart';
+
 class BaggageClaimAnnouncementPage extends StatefulWidget {
   const BaggageClaimAnnouncementPage({Key? key}) : super(key: key);
 
@@ -216,6 +218,54 @@ class _BaggageClaimAnnouncementPageState extends State<BaggageClaimAnnouncementP
     );
   }
 
+  String generateBaggageClaimAnnouncement({
+    required BuildContext context,
+    required String airline,
+    required String flightNumber,
+    required String originCity,
+    required String carouselNumber,
+    required TimeOfDay arrivalTime,
+    required String baggageType,
+    String? expectedDuration,
+    String? specialInstructions,
+    String? otherAirline,
+  }) {
+    // Start with a greeting and airline information
+    String announcement = 'Attention, passengers. ';
+    announcement += otherAirline != null && airline == 'Other'
+        ? 'This is a baggage claim announcement for $otherAirline Airlines flight $flightNumber.'
+        : 'This is a baggage claim announcement for $airline flight $flightNumber.';
+
+    // Add origin and baggage details
+    announcement += ' The flight arriving from $originCity has its baggage available at carousel $carouselNumber.';
+
+    // Mention baggage type
+    announcement += ' Please proceed to the $baggageType baggage claim area.';
+
+    // Add expected duration if provided
+    if (expectedDuration != null && expectedDuration.isNotEmpty) {
+      announcement += ' The baggage is expected to arrive in approximately $expectedDuration.';
+    }
+
+    // Add special instructions if provided
+    if (specialInstructions != null && specialInstructions.isNotEmpty) {
+      announcement += ' Note: $specialInstructions.';
+    }
+
+    // Add arrival time
+    announcement += ' The flight landed at ${arrivalTime.format(context)}.';
+
+    // Closing statement
+    announcement +=
+    ' Thank you for flying with us. We hope you had a pleasant journey.';
+
+    // Log for debugging
+    print("Generated Baggage Claim Announcement: $announcement");
+
+    // Return the final announcement
+    return announcement.trim();
+  }
+
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
       if (_arrivalTime == null) {
@@ -228,14 +278,31 @@ class _BaggageClaimAnnouncementPageState extends State<BaggageClaimAnnouncementP
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Baggage claim announcement saved successfully'),
-          backgroundColor: Colors.green,
-        ),
+      // Generate the baggage claim announcement
+      String announcement = generateBaggageClaimAnnouncement(
+        context: context,
+        airline: _selectedAirline,
+        flightNumber: _flightNumberController.text,
+        originCity: _originCityController.text,
+        carouselNumber: _carouselNumberController.text,
+        arrivalTime: _arrivalTime!,
+        baggageType: _selectedBaggageType,
+        expectedDuration: _expectedDurationController.text.isNotEmpty
+            ? _expectedDurationController.text
+            : null,
+        specialInstructions: _specialInstructionsController.text.isNotEmpty
+            ? _specialInstructionsController.text
+            : null,
+        otherAirline: _selectedAirline == 'Other' ? _otherAirlineController.text : null,
       );
 
-      Navigator.pop(context);
+      // Navigate to a page to display the announcement
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TextToAnnouncementService(text: announcement),
+        ),
+      );
     }
   }
 
