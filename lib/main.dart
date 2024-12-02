@@ -114,7 +114,6 @@ class _CameraScreenState extends State<CameraScreen> {
 
   void _connectToServer() async {
     try {
-
       // Retrieve the saved JWT token from shared preferences
       String? token = await AuthService.getToken();
 
@@ -123,8 +122,8 @@ class _CameraScreenState extends State<CameraScreen> {
         return;
       }
 
-      _socket = await Socket.connect('192.168.1.38', 12343);
-      print('Connected to server at 192.168.31.133:12343');
+      _socket = await Socket.connect('192.168.10.3', 12342);
+      print('Connected to server at 192.168.31.133:12342');
 
       // Send the token as the first message to the server
       String authHeader = "Authorization: Bearer $token";

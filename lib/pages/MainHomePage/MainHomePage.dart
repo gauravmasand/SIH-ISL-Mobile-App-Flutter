@@ -3,6 +3,7 @@ import 'package:isl/pages/TravelPage/TravelPage.dart';
 import '../../main.dart';
 import '../Announcement/AnnouncementBasePage.dart';
 import '../GuideAndHelp/GuideAndHelp.dart';
+import '../ISLToText_mp_lstm/ISLToText_mp_lstm.dart';
 import '../SettingsPage/SettingsPage.dart';
 import '../TextToISL/TextToISL.dart';
 import '../YoutubeToISL/YoutubeToISL.dart';
@@ -71,9 +72,13 @@ class _MainHomePageState extends State<MainHomePage> {
                       icon: Icons.sign_language,
                       color: Colors.blue,
                       onTap: () {
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(builder: (context) => ISLToText_mp_lstm()),
+                        // );
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => CameraScreen()),
+                          MaterialPageRoute(builder: (context) => WebSocketClient()),
                         );
                       },
                     ),
