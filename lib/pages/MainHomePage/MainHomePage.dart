@@ -78,7 +78,7 @@ class _MainHomePageState extends State<MainHomePage> {
                         // );
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => WebSocketClient()),
+                          MaterialPageRoute(builder: (context) => ISLToText_mp_lstm()),
                         );
                       },
                     ),

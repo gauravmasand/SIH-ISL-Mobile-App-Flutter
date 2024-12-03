@@ -1,93 +1,123 @@
-import 'dart:typed_data';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
+import 'package:isl/Services/AuthServices.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:image/image.dart' as img;
 
 import 'dart:convert';
-import 'dart:isolate';
 
-List<CameraDescription> cameras = [];
+import '../../Services/ISlToTextServices.dart';
+import '../../constants.dart';
 
-class WebSocketClient extends StatefulWidget {
+class ISLToText_mp_lstm extends StatefulWidget {
 
-  WebSocketClient();
+  ISLToText_mp_lstm();
 
   @override
-  _WebSocketClientState createState() => _WebSocketClientState();
+  _ISLToText_mp_lstmState createState() => _ISLToText_mp_lstmState();
 }
 
-class _WebSocketClientState extends State<WebSocketClient> {
-  /// Working code with better optimization
+class _ISLToText_mp_lstmState extends State<ISLToText_mp_lstm> {
+  /// Working with good UI and UX
+  final IslToTextService _service = IslToTextService();
   late CameraController _cameraController;
   late WebSocketChannel _channel;
-  bool _isStreaming = false;
-  DateTime? _lastFrameTime;
+  bool _isInitialized = false;
+  bool _isConnected = false;
   String _prediction = "";
+  DateTime? _lastFrameTime;
+  List<CameraDescription> cameras = [];
+  bool _isFrontCamera = true;
   static const int targetFps = 24;
-  static const int frameInterval = 1000 ~/ targetFps; // milliseconds between frames
+  static const int frameInterval = 1000 ~/ targetFps;
 
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
-    final clientId = "123123";
+    _initializeServices();
+  }
+
+  Future<void> _initializeServices() async {
+    try {
+      // Get available cameras first
+      cameras = await availableCameras();
+      await _initializeCamera();
+      await _initializeWebSocket();
+      setState(() {
+        _isInitialized = true;
+        _isConnected = true;
+      });
+      _startStreaming();
+    } catch (e) {
+      print("Initialization error: $e");
+      setState(() {
+        _isInitialized = true;
+        _isConnected = false;
+      });
+    }
+  }
+
+  Future<void> _switchCamera() async {
+    setState(() {
+      _isInitialized = false;
+      _isFrontCamera = !_isFrontCamera;
+    });
+
+    await _cameraController.dispose();
+    await _initializeCamera();
+
+    setState(() {
+      _isInitialized = true;
+    });
+    _startStreaming();
+  }
+
+  Future<void> _initializeWebSocket() async {
+    final clientId = await AuthService.getToken();
+    print("The client token is $clientId");
     _channel = WebSocketChannel.connect(
-      Uri.parse('ws://192.168.10.3:8000/ws/${clientId}'),
+      Uri.parse('$islToTextBaseURl/ws/${clientId}'),
     );
-    _channel.stream.listen(_handleMessage);  // Add this line
+
+    _channel.stream.listen(_handleMessage, onError: (error) {
+      setState(() => _isConnected = false);
+    });
   }
 
   Future<void> _initializeCamera() async {
-    final cameras = await availableCameras();
-    // Find the front camera
-    final frontCamera = cameras.firstWhere(
-          (camera) => camera.lensDirection == CameraLensDirection.front,
-      orElse: () => cameras.first, // Fallback to first camera if front camera is not available
+    final selectedCamera = cameras.firstWhere(
+          (camera) => _isFrontCamera
+          ? camera.lensDirection == CameraLensDirection.front
+          : camera.lensDirection == CameraLensDirection.back,
+      orElse: () => cameras.first,
     );
 
     _cameraController = CameraController(
-      frontCamera,
+      selectedCamera,
       ResolutionPreset.medium,
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.yuv420,
     );
 
     await _cameraController.initialize();
-
     await _cameraController.lockCaptureOrientation(DeviceOrientation.portraitUp);
-
-    _cameraController.startImageStream(_processFrame);
   }
 
-  // Future<void> _initializeCamera() async {
-  //   final cameras = await availableCameras();
-  //   final firstCamera = cameras.first;
-  //
-  //   _cameraController = CameraController(
-  //     firstCamera,
-  //     ResolutionPreset.medium,
-  //     enableAudio: false,
-  //     imageFormatGroup: ImageFormatGroup.yuv420,
-  //   );
-  //
-  //   await _cameraController.initialize();
-  //
-  //   await _cameraController.lockCaptureOrientation(DeviceOrientation.portraitUp);
-  //
-  //   _cameraController.startImageStream(_processFrame);
-  // }
-
+  void _startStreaming() {
+    _cameraController.startImageStream(_processFrame);
+  }
 
   void _handleMessage(dynamic message) {
     try {
       final data = jsonDecode(message);
       if (data['prediction'] != null) {
         setState(() {
-          _prediction = _prediction + " " + data['prediction'];
-          print("This is log  of prediction" + _prediction);
+          _prediction = _prediction.isEmpty
+              ? data['prediction']
+              : "$_prediction ${data['prediction']}";
         });
       }
     } catch (e) {
@@ -95,10 +125,8 @@ class _WebSocketClientState extends State<WebSocketClient> {
     }
   }
 
-
-
   void _processFrame(CameraImage image) {
-    if (!_isStreaming) return;
+    if (!_isConnected) return;
 
     final now = DateTime.now();
     if (_lastFrameTime != null) {
@@ -108,10 +136,12 @@ class _WebSocketClientState extends State<WebSocketClient> {
     _lastFrameTime = now;
 
     try {
-      final img.Image frame = _convertYUV420ToImage(image);
+      final img.Image frame = _service.convertYUV420ToImage(image);
 
-      // Rotate the frame from landscape to portrait
-      final img.Image rotatedFrame = img.copyRotate(frame, angle: 90); // Rotate 90 degrees clockwise
+      // Fix rotation based on camera direction
+      final img.Image rotatedFrame = _isFrontCamera
+          ? img.copyRotate(frame, angle: -90)  // Rotate counterclockwise for front camera
+          : img.copyRotate(frame, angle: 90);  // Rotate clockwise for back camera
 
       final List<int> jpgData = img.encodeJpg(rotatedFrame, quality: 65);
       final String base64Image = base64Encode(jpgData);
@@ -121,56 +151,241 @@ class _WebSocketClientState extends State<WebSocketClient> {
     }
   }
 
-  img.Image _convertYUV420ToImage(CameraImage inputImage) {
-      final img.Image outputImage = img.Image(
-        width: inputImage.width,
-        height: inputImage.height,
-      );
+  Widget _buildPredictionOverlay() {
+    final words = _prediction.split(' ');
+    final lastWord = words.isNotEmpty ? words.last : '';
+    final previousWords = words.length > 1 ? words.sublist(0, words.length - 1).join(' ') : '';
 
-      final yRowStride = inputImage.planes[0].bytesPerRow;
-      final uvRowStride = inputImage.planes[1].bytesPerRow;
-      final uvPixelStride = inputImage.planes[1].bytesPerPixel ?? 1;
-
-      // More accurate YUV -> RGB conversion coefficients
-      const double ry = 1.0;
-      const double gy = 1.0;
-      const double by = 1.0;
-      const double ru = 0.0;
-      const double gu = -0.344136;
-      const double bu = 1.772;
-      const double rv = 1.402;
-      const double gv = -0.714136;
-      const double bv = 0.0;
-
-      for (int y = 0; y < inputImage.height; y++) {
-        for (int x = 0; x < inputImage.width; x++) {
-          final int yIndex = y * yRowStride + x;
-
-          // Proper UV index calculation with pixel stride
-          final int uvRow = y ~/ 2;
-          final int uvCol = x ~/ 2;
-          final int uvIndex = uvRow * uvRowStride + uvCol * uvPixelStride;
-
-          // Extract YUV values
-          final int yValue = inputImage.planes[0].bytes[yIndex];
-          final int uValue = inputImage.planes[1].bytes[uvIndex];
-          final int vValue = inputImage.planes[2].bytes[uvIndex];
-
-          // Adjusted YUV -> RGB conversion
-          final double yNormalized = (yValue - 16) * 1.164;
-          final double uDiff = uValue - 128;
-          final double vDiff = vValue - 128;
-
-          final int r = (yNormalized + rv * vDiff).round().clamp(0, 255);
-          final int g = (yNormalized + gu * uDiff + gv * vDiff).round().clamp(0, 255);
-          final int b = (yNormalized + bu * uDiff).round().clamp(0, 255);
-
-          outputImage.setPixelRgb(x, y, r, g, b);
-        }
-      }
-
-      return outputImage;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      width: MediaQuery.of(context).size.width,
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'ISL to Text',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.flip_camera_ios_outlined, color: Colors.black87,),
+                color: Colors.white,
+                iconSize: 28,
+                onPressed: _switchCamera,
+                tooltip: 'Switch Camera',
+              )
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: MediaQuery.of(context).size.width,
+            child: Expanded(
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: previousWords + ' ',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    WidgetSpan(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.teal.shade300,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          lastWord,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
+
+  Widget _buildLoadingState() {
+    return Container(
+      color: Colors.black,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(
+              color: Colors.teal,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              _isConnected ? 'Initializing camera...' : 'Connecting to server...',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Container(
+      color: Colors.black,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              color: Colors.red,
+              size: 48,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Connection lost',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _initializeServices,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCameraSwitchButton() {
+    return Container(
+      width: 54,
+      height: 54,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: IconButton(
+        icon: const Icon(Icons.flip_camera_ios),
+        color: Colors.white,
+        iconSize: 28,
+        onPressed: _switchCamera,
+        tooltip: 'Switch Camera',
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: !_isInitialized
+          ? _buildLoadingState()
+          : !_isConnected
+          ? _buildErrorState()
+          : SafeArea(
+            child: Column(
+              children: [
+              // Top Section (Camera/Avatar)
+                Expanded(
+                  flex: 6,
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    color: Colors.black,
+                    child: Positioned.fill(
+                      child: AspectRatio(
+                        aspectRatio: _cameraController.value.aspectRatio,
+                        child: CameraPreview(_cameraController),
+                      ),
+                    ),
+                  ),
+                ),
+                // Bottom Section
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    color: Colors.white,
+                    child: Column(
+                      children: [
+                        _buildPredictionOverlay(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     backgroundColor: Colors.black,
+  //     body: !_isInitialized
+  //         ? _buildLoadingState()
+  //         : !_isConnected
+  //         ? _buildErrorState()
+  //         : Stack(
+  //       children: [
+  //         // Camera Preview
+  //         Positioned.fill(
+  //           child: AspectRatio(
+  //             aspectRatio: _cameraController.value.aspectRatio,
+  //             child: CameraPreview(_cameraController),
+  //           ),
+  //         ),
+  //         // Camera Switch Button
+  //         Positioned(
+  //           right: 16,
+  //             top: 34,
+  //             child: _buildCameraSwitchButton()
+  //         ),
+  //         // Prediction Overlay
+  //         Positioned(
+  //           left: 12,
+  //           right: 12,
+  //           bottom: 16,
+  //           child: _buildPredictionOverlay(),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   @override
   void dispose() {
@@ -179,118 +394,4 @@ class _WebSocketClientState extends State<WebSocketClient> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Video Stream")),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _isStreaming = !_isStreaming;
-              });
-            },
-            child: Text(_isStreaming ? "Stop Streaming" : "Start Streaming"),
-          ),
-          if (_isStreaming)
-            SizedBox(
-              width: 320, // Fixed size preview
-              height: 240,
-              child: CameraPreview(_cameraController),
-            ),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              _prediction,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
-
-// class ISLToText_mp_lstm extends StatefulWidget {
-//   @override
-//   _ISLToText_mp_lstmState createState() => _ISLToText_mp_lstmState();
-// }
-//
-// class _ISLToText_mp_lstmState extends State<ISLToText_mp_lstm> {
-//   late CameraController _cameraController;
-//   late WebSocketChannel _channel;
-//
-//   void initCamera() async {
-//     cameras = await availableCameras();
-//   }
-//
-//   @override
-//   void initState() {
-//     initCamera();
-//     super.initState();
-//     _initializeCamera();
-//     _initializeWebSocket();
-//   }
-//
-//   // Initialize camera
-//   void _initializeCamera() async {
-//     setState(() async {
-//       _cameraController = CameraController(cameras[0], ResolutionPreset.medium);
-//       await _cameraController.initialize();
-//     });
-//     _startStreaming();
-//   }
-//
-//   // Initialize WebSocket connection
-//   void _initializeWebSocket() {
-//     _channel = WebSocketChannel.connect(Uri.parse('ws://172.20.10.7/ws'));
-//   }
-//
-//   // Start streaming video frames
-//   void _startStreaming() {
-//     _cameraController.startImageStream((image) async {
-//       try {
-//         // Convert the camera frame to an image
-//         img.Image? imgFrame = img.decodeImage(Uint8List.fromList(image.planes[0].bytes));
-//
-//         if (imgFrame != null) {
-//           // Encode the image as a JPEG (you can also use WebP for better compression)
-//           List<int> jpegBytes = img.encodeJpg(imgFrame, quality: 80);
-//
-//           // Send the image bytes to the WebSocket server
-//           _channel.sink.add(jpegBytes);
-//         }
-//       } catch (e) {
-//         print('Error streaming image: $e');
-//       }
-//     });
-//   }
-//
-//   @override
-//   void dispose() {
-//     _cameraController.dispose();
-//     _channel.sink.close();
-//     super.dispose();
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: Text('Live Video Streaming')),
-//       body: Center(
-//         child: _cameraController.value.isInitialized
-//             ? CameraPreview(_cameraController)
-//             : CircularProgressIndicator(),
-//       ),
-//     );
-//   }
-// }

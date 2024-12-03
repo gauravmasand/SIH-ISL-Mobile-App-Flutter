@@ -1,13 +1,16 @@
 import 'dart:convert';
 
-import 'package:avatar_glow/avatar_glow.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:image/image.dart' as img;
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+
+import '../../Services/AuthServices.dart';
+import '../../Services/ISlToTextServices.dart';
+import '../../constants.dart';
 
 class TravelPage extends StatefulWidget {
   const TravelPage({Key? key}) : super(key: key);
@@ -22,6 +25,17 @@ class _TravelPageState extends State<TravelPage> {
   late CameraController _cameraController;
   bool _isCameraInitialized = false;
   late final WebViewController _controller;
+  final IslToTextService _service = IslToTextService();
+  /// Working with good UI and UX
+  late WebSocketChannel _channel;
+  bool _isInitialized = false;
+  bool _isConnected = false;
+  String _prediction = "";
+  DateTime? _lastFrameTime;
+  List<CameraDescription> cameras = [];
+  bool _isFrontCamera = true;  // Track current camera
+  static const int targetFps = 24;
+  static const int frameInterval = 1000 ~/ targetFps;
 
   // for audio
   final TextEditingController _textController = TextEditingController();
@@ -55,6 +69,129 @@ class _TravelPageState extends State<TravelPage> {
       ]
     },
   ];
+
+  /// ISL to Text Functions
+  Future<void> _initializeServices() async {
+    try {
+      // Get available cameras first
+      cameras = await availableCameras();
+      await _initializeCamera();
+      await _initializeWebSocket();
+      setState(() {
+        _isInitialized = true;
+        _isConnected = true;
+      });
+      _startStreaming();
+    } catch (e) {
+      print("Initialization error: $e");
+      setState(() {
+        _isInitialized = true;
+        _isConnected = false;
+      });
+    }
+  }
+
+  Future<void> _switchCamera() async {
+    setState(() {
+      _isCameraInitialized = false;
+      _isInitialized = false;
+      _isFrontCamera = !_isFrontCamera;
+    });
+
+    await _cameraController.dispose();
+    await _initializeCamera();
+
+    setState(() {
+      _isCameraInitialized = true;
+      _isInitialized = true;
+    });
+    _startStreaming();
+  }
+
+  Future<void> _initializeWebSocket() async {
+    final clientId = await AuthService.getToken();
+    _channel = WebSocketChannel.connect(
+      Uri.parse('$islToTextBaseURl/ws/${clientId}'),
+    );
+    _channel.stream.listen(_handleMessage, onError: (error) {
+      setState(() => _isConnected = false);
+    });
+  }
+
+  Future<void> _initializeCamera() async {
+    final selectedCamera = cameras.firstWhere(
+          (camera) => _isFrontCamera
+          ? camera.lensDirection == CameraLensDirection.front
+          : camera.lensDirection == CameraLensDirection.back,
+      orElse: () => cameras.first,
+    );
+
+    _cameraController = CameraController(
+      selectedCamera,
+      ResolutionPreset.medium,
+      enableAudio: false,
+      imageFormatGroup: ImageFormatGroup.yuv420,
+    );
+
+    await _cameraController.initialize();
+    await _cameraController.lockCaptureOrientation(DeviceOrientation.portraitUp);
+
+    setState(() {
+      _isCameraInitialized = true;
+    });
+  }
+
+  Future<void> _startStreaming() async {
+    if (!_isInitialized) {
+      await _initializeCamera();
+    }
+    await _cameraController.startImageStream(_processFrame);
+    setState(() {
+      _isInitialized = true;
+    });
+  }
+
+  void _handleMessage(dynamic message) {
+    try {
+      final data = jsonDecode(message);
+      if (data['prediction'] != null) {
+        setState(() {
+          _prediction = _prediction.isEmpty
+              ? data['prediction']
+              : "$_prediction ${data['prediction']}";
+        });
+      }
+    } catch (e) {
+      print("Error parsing message: $e");
+    }
+  }
+
+  void _processFrame(CameraImage image) {
+    if (!_isConnected) return;
+
+    final now = DateTime.now();
+    if (_lastFrameTime != null) {
+      final elapsed = now.difference(_lastFrameTime!).inMilliseconds;
+      if (elapsed < frameInterval) return;
+    }
+    _lastFrameTime = now;
+
+    try {
+      final img.Image frame = _service.convertYUV420ToImage(image);
+
+      // Fix rotation based on camera direction
+      final img.Image rotatedFrame = _isFrontCamera
+          ? img.copyRotate(frame, angle: -90)  // Rotate counterclockwise for front camera
+          : img.copyRotate(frame, angle: 90);  // Rotate clockwise for back camera
+
+      final List<int> jpgData = img.encodeJpg(rotatedFrame, quality: 65);
+      final String base64Image = base64Encode(jpgData);
+      _channel.sink.add(base64Image);
+    } catch (e) {
+      print("Error processing frame: $e");
+    }
+  }
+  /// ISL to Text Functions
 
   // Custom encode function to ensure spaces are encoded as %20
   String customUrlEncode(String text) {
@@ -111,7 +248,7 @@ class _TravelPageState extends State<TravelPage> {
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
+    _initializeServices();
     _speech = stt.SpeechToText();
 
     // Listen to the status updates and handle when the session ends automatically
@@ -129,18 +266,11 @@ class _TravelPageState extends State<TravelPage> {
 
   }
 
-  Future<void> _initializeCamera() async {
-    final cameras = await availableCameras();
-    _cameraController = CameraController(cameras[0], ResolutionPreset.high);
-    await _cameraController.initialize();
-    setState(() => _isCameraInitialized = true);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(  // Changed from Stack to Column
+        child: Column(
           children: [
             // Top Section (Camera/Avatar)
             Expanded(
@@ -160,7 +290,16 @@ class _TravelPageState extends State<TravelPage> {
                     right: 16,
                     child: FloatingActionButton(
                       heroTag: 'switch',
-                      onPressed: () => setState(() => isISLToText = !isISLToText),
+                      onPressed: () {
+                        setState(() {
+                          isISLToText = !isISLToText;
+                          if (isISLToText) {
+                            _startStreaming();
+                          } else {
+                            _stopStreaming();
+                          }
+                        });
+                      },
                       child: Icon(isISLToText ? Icons.text_fields : Icons.sign_language),
                       mini: true,
                     ),
@@ -203,7 +342,20 @@ class _TravelPageState extends State<TravelPage> {
     if (!_isCameraInitialized) {
       return const Center(child: CircularProgressIndicator());
     }
-    return CameraPreview(_cameraController);
+    return Expanded(
+      flex: 6,
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: Colors.black,
+        child: Positioned.fill(
+          child: AspectRatio(
+            aspectRatio: _cameraController.value.aspectRatio,
+            child: CameraPreview(_cameraController),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildAvatarView() {
@@ -217,28 +369,77 @@ class _TravelPageState extends State<TravelPage> {
   }
 
   Widget _buildDetectedTextArea() {
+    final words = _prediction.split(' ');
+    final lastWord = words.isNotEmpty ? words.last : '';
+    final previousWords = words.length > 1 ? words.sublist(0, words.length - 1).join(' ') : '';
+
     return Container(
       padding: const EdgeInsets.all(16),
+      width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
         color: Colors.grey[100],
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'ISL to Text',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'ISL to Text',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.flip_camera_ios_outlined, color: Colors.black87,),
+                color: Colors.white,
+                iconSize: 28,
+                onPressed: _switchCamera,
+                tooltip: 'Switch Camera',
+              )
+            ],
           ),
           const SizedBox(height: 8),
-          const Expanded(
-            child: Text(
-              'Real-time detected text will appear here...',
-              style: TextStyle(fontSize: 18),
+          Container(
+            width: MediaQuery.of(context).size.width,
+            child: Expanded(
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: previousWords + ' ',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    WidgetSpan(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.teal.shade300,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          lastWord,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
         ],
@@ -347,7 +548,6 @@ class _TravelPageState extends State<TravelPage> {
       ),
     );
   }
-
 
   Widget _buildQuickPhrases() {
     return Container(
@@ -472,6 +672,14 @@ class _TravelPageState extends State<TravelPage> {
   @override
   void dispose() {
     _cameraController.dispose();
+    _channel.sink.close();
     super.dispose();
+  }
+
+  Future<void> _stopStreaming() async {
+    setState(() {
+      _isInitialized = false;
+    });
+    await _cameraController.stopImageStream();
   }
 }
