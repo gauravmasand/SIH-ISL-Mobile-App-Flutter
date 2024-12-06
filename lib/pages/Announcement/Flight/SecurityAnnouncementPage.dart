@@ -192,21 +192,20 @@ class _SecurityAnnouncementPageState extends State<SecurityAnnouncementPage> {
   }) {
     // Start with a formal introduction
     String announcement = 'Attention, everyone. ';
-    announcement +=
-    'There is a security alert in the $securityZone zone. The alert level is classified as $alertLevel.';
+    announcement += 'Security alert in $securityZone zone. Alert level: $alertLevel.';
 
     // Mention the nature of the alert
-    announcement += ' The nature of the alert is: $natureOfAlert.';
+    announcement += ' Alert nature: $natureOfAlert.';
 
     // Add required actions
-    announcement += ' Please take the following action: $requiredAction.';
+    announcement += ' Action required: $requiredAction.';
 
     // Mention affected areas
-    announcement += ' The affected areas are: $affectedAreas.';
+    announcement += ' Affected areas: $affectedAreas.';
 
     // Add duration if applicable
     if (duration != null && duration.isNotEmpty) {
-      announcement += ' This alert is expected to last for $duration.';
+      announcement += ' Alert lasts for $duration.';
     }
 
     // Add special instructions if provided
@@ -216,18 +215,18 @@ class _SecurityAnnouncementPageState extends State<SecurityAnnouncementPage> {
 
     // Add contact information if provided
     if (contactPerson != null && contactPerson.isNotEmpty) {
-      announcement += ' For further assistance, please contact: $contactPerson.';
+      announcement += ' For assistance, contact: $contactPerson.';
     }
 
     // Closing statement
-    announcement +=
-    ' Thank you for your cooperation. Please remain calm and follow the instructions provided.';
+    announcement += ' Thank you. Remain calm and follow instructions.';
 
     // Log for debugging
-    print("Generated Security Announcement: $announcement");
+    print("Generated ISL Security Alert Announcement: $announcement");
 
     // Return the final announcement
     return announcement.trim();
+
   }
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {

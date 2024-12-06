@@ -104,16 +104,17 @@ class _SafetyAndSecurityAnnouncementPageState extends State<SafetyAndSecurityAnn
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
       String announcement = """
-      Attention please, there is a ${_alertTypeController.text} alert.
-      The affected area is: ${_affectedAreaController.text}.
-      Please follow these safety instructions: ${_safetyInstructionsController.text}.
-      For further assistance, contact: ${_emergencyContactsController.text}.
-      Restricted zones include: ${_restrictedZonesController.text}.
-      Action required: ${_actionRequiredController.text}.
-      Thank you for your cooperation.
-      """;
+        Attention, ${_alertTypeController.text} alert.
+        Affected area: ${_affectedAreaController.text}.
+        Follow safety instructions: ${_safetyInstructionsController.text}.
+        For help, contact: ${_emergencyContactsController.text}.
+        Restricted zones: ${_restrictedZonesController.text}.
+        Action required: ${_actionRequiredController.text}.
+        Thank you for your cooperation.
+        """;
 
-      print("The annuncemtn is " + announcement);
+      print("The announcement is: " + announcement);
+
 
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => TextToAnnouncementService(text: announcement)));

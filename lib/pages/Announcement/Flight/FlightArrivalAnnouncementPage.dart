@@ -234,31 +234,29 @@ class _FlightArrivalAnnouncementPageState extends State<FlightArrivalAnnouncemen
     String? otherAirline,
   }) {
     // Start with a greeting and airline information
-    String announcement = 'Attention, passengers. ';
+    String announcement = 'Hello, passengers. ';
     announcement += otherAirline != null && airline == 'Other'
-        ? 'This is an arrival announcement for $otherAirline Airlines flight $flightNumber.'
-        : 'This is an arrival announcement for $airline flight $flightNumber.';
+        ? 'Arrival for $otherAirline flight $flightNumber.'
+        : 'Arrival for $airline flight $flightNumber.';
 
     // Add origin and destination details
-    announcement += ' The flight originated from $from and has arrived in $to.';
+    announcement += ' Flight came from $from, now in $to.';
 
     // Add arrival time and date
-    announcement +=
-    ' The flight landed on ${arrivalDate.toString().split(' ')[0]} at ${arrivalTime.format(context)}.';
+    announcement += ' Landed on ${arrivalDate.toString().split(' ')[0]} at ${arrivalTime.format(context)}.';
 
     // Add terminal and baggage claim information
-    announcement +=
-    ' Passengers can collect their baggage at claim area $baggageClaim, located at arrival terminal $arrivalTerminal.';
+    announcement += ' Baggage at claim area $baggageClaim, at arrival terminal $arrivalTerminal.';
 
     // Closing statement
-    announcement +=
-    ' Thank you for flying with us. We hope you had a pleasant journey and wish you a wonderful day ahead.';
+    announcement += ' Thank you for flying with us. Have a great day!';
 
     // Log for debugging
-    print("Generated Arrival Announcement: $announcement");
+    print("Generated ISL Arrival Announcement: $announcement");
 
     // Return the final announcement
     return announcement.trim();
+
   }
 
   void _submitForm() {

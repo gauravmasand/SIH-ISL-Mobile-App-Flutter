@@ -104,12 +104,14 @@ class _DepartureAnnouncementPageState extends State<DepartureAnnouncementPage> {
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
       String announcement = """
-      Attention please, this is an announcement for the departure of train/vehicle number ${_trainNumberController.text}, heading towards ${_destinationStationController.text}. The scheduled departure time is ${_scheduledDepartureTimeController.text} from platform number ${_platformNumberController.text}. The carrier is ${_carrierNameController.text}.
-      ${_passengerInstructionsController.text.isNotEmpty ? "Passenger instructions: ${_passengerInstructionsController.text}." : ""}
-      Thank you for your attention.
+        Attention, please. This is an announcement for the departure of train/vehicle number ${_trainNumberController.text}, 
+        heading towards ${_destinationStationController.text}. The scheduled departure time is ${_scheduledDepartureTimeController.text} 
+        from platform number ${_platformNumberController.text}. The carrier is ${_carrierNameController.text}.
+        ${_passengerInstructionsController.text.isNotEmpty ? "Passenger instructions: ${_passengerInstructionsController.text}." : ""}
+        Thank you for your attention.
       """;
 
-      print("The annuncemtn is " + announcement);
+      print("The announcement is: " + announcement);
 
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => TextToAnnouncementService(text: announcement)));

@@ -104,16 +104,17 @@ class _FacilityInfoAnnouncementPageState extends State<FacilityInfoAnnouncementP
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
       String announcement = """
-      Attention please, here is the current update for the facility named ${_facilityNameController.text}.
-      Status: ${_currentStatusController.text}.
-      Operating hours are: ${_operatingHoursController.text}.
-      Available services: ${_servicesAvailableController.text}.
-      Maintenance updates: ${_maintenanceUpdatesController.text}.
-      For further assistance, contact: ${_contactInformationController.text}.
-      Thank you for your cooperation.
-      """;
+        Attention, update for ${_facilityNameController.text}.
+        Status: ${_currentStatusController.text}.
+        Operating hours: ${_operatingHoursController.text}.
+        Services: ${_servicesAvailableController.text}.
+        Maintenance: ${_maintenanceUpdatesController.text}.
+        For help, contact: ${_contactInformationController.text}.
+        Thank you.
+        """;
 
-      print("The annuncemtn is " + announcement);
+      print("The announcement is: " + announcement);
+
 
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => TextToAnnouncementService(text: announcement)));

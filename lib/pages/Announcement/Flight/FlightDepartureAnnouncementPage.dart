@@ -223,30 +223,29 @@ class _FlightDepartureAnnouncementPageState extends State<FlightDepartureAnnounc
     String? otherAirline,
   }) {
     // Start with a greeting and airline information
-    String announcement = 'Attention, passengers. ';
+    String announcement = 'Hello, passengers. ';
     announcement += otherAirline != null && airline == 'Other'
-        ? 'This is a departure announcement for $otherAirline Airlines flight $flightNumber.'
-        : 'This is a departure announcement for $airline flight $flightNumber.';
+        ? 'Departure for $otherAirline flight $flightNumber.'
+        : 'Departure for $airline flight $flightNumber.';
 
     // Add origin and destination details
-    announcement += ' The flight will be departing from $from and arriving at $to.';
+    announcement += ' Flight from $from to $to.';
 
     // Add departure time and date
-    announcement +=
-    ' Departure is scheduled for ${departureDate.toString().split(' ')[0]} at ${departureTime.format(context)}.';
+    announcement += ' Departure on ${departureDate.toString().split(' ')[0]} at ${departureTime.format(context)}.';
 
     // Add terminal information
-    announcement += ' Passengers are requested to proceed to departure terminal $departureTerminal.';
+    announcement += ' Go to terminal $departureTerminal.';
 
     // Closing statement
-    announcement +=
-    ' Please ensure you have your boarding passes and identification ready. Thank you for flying with us, and we wish you a safe and pleasant journey.';
+    announcement += ' Keep boarding pass and ID ready. Thank you. Safe journey.';
 
     // Log for debugging
-    print("Generated Departure Announcement: $announcement");
+    print("Generated ISL Departure Announcement: $announcement");
 
     // Return the final announcement
     return announcement.trim();
+
   }
 
   void _submitForm() {

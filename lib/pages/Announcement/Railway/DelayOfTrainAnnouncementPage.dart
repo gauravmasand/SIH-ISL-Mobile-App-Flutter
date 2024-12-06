@@ -104,15 +104,15 @@ class _DelayOfTrainAnnouncementPageState extends State<DelayOfTrainAnnouncementP
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
       String announcement = """
-      Attention please, train number ${_trainNumberController.text} scheduled at ${_originalScheduledTimeController.text} is delayed. The expected delayed time is ${_expectedDelayedTimeController.text}.
-      The reason for the delay is: ${_reasonForDelayController.text}.
-      The estimated arrival time is now ${_estimatedArrivalDepartureController.text}.
-      Alternate options include: ${_alternateOptionsController.text}.
-      We apologise for the inconvenience caused.
-      Thank you for your patience.
-      """;
+        Attention, train ${_trainNumberController.text} scheduled at ${_originalScheduledTimeController.text} is delayed.
+        The delay is ${_expectedDelayedTimeController.text} due to ${_reasonForDelayController.text}.
+        Estimated arrival is now ${_estimatedArrivalDepartureController.text}.
+        Alternatives: ${_alternateOptionsController.text}.
+        Apologies for the inconvenience and thank you for your patience.
+        """;
 
-      print("The annuncemtn is " + announcement);
+      print("The announcement is: " + announcement);
+
 
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => TextToAnnouncementService(text: announcement)));

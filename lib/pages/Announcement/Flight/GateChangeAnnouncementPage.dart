@@ -230,36 +230,36 @@ class _GateChangeAnnouncementPageState extends State<GateChangeAnnouncementPage>
     String? otherAirline,
   }) {
     // Start with a greeting and airline information
-    String announcement = 'Attention, passengers. ';
+    String announcement = 'Hello, passengers. ';
     announcement += otherAirline != null && airline == 'Other'
-        ? 'This is an announcement for $otherAirline Airlines flight $flightNumber.'
-        : 'This is an announcement for $airline flight $flightNumber.';
+        ? '$otherAirline flight $flightNumber.'
+        : '$airline flight $flightNumber.';
 
     // Add destination and gate change details
-    announcement += ' The flight to $destination will now depart from gate $newGate instead of gate $originalGate.';
+    announcement += ' Flight to $destination now departs from gate $newGate. Old gate: $originalGate.';
 
     // Add departure time
-    announcement += ' The departure time remains scheduled for ${departureTime.format(context)}.';
+    announcement += ' Departure at ${departureTime.format(context)}.';
 
     // Add reason for the change if provided
     if (reason != null && reason.isNotEmpty) {
-      announcement += ' The gate change is due to $reason.';
+      announcement += ' Reason: $reason.';
     }
 
     // Add additional instructions if provided
     if (additionalInstructions != null && additionalInstructions.isNotEmpty) {
-      announcement += ' Please note: $additionalInstructions.';
+      announcement += ' Note: $additionalInstructions.';
     }
 
     // Closing statement
-    announcement +=
-    ' We apologise for any inconvenience caused and thank you for your understanding. Please proceed to gate $newGate promptly.';
+    announcement += ' Go to gate $newGate. Thank you.';
 
     // Log for debugging
-    print("Generated Gate Change Announcement: $announcement");
+    print("Generated ISL Gate Change Announcement: $announcement");
 
     // Return the final announcement
     return announcement.trim();
+
   }
 
   void _submitForm() {

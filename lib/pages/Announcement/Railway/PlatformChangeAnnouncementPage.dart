@@ -104,13 +104,15 @@ class _PlatformChangeAnnouncementPageState extends State<PlatformChangeAnnouncem
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
       String announcement = """
-      Attention please, there is a platform change for train/vehicle number ${_trainNumberController.text}. The original platform number ${_originalPlatformController.text} has been changed to platform number ${_newPlatformController.text}.
-      The reason for this change is: ${_reasonForChangeController.text}. This change will be effective from ${_effectiveTimeController.text}.
-      Affected services include: ${_affectedServicesController.text}.
-      Thank you for your attention.
-      """;
+        Attention, please. There is a platform change for train/vehicle number ${_trainNumberController.text}. 
+        The original platform number ${_originalPlatformController.text} has been changed to platform number ${_newPlatformController.text}.
+        The reason for this change is: ${_reasonForChangeController.text}. This change will be effective from ${_effectiveTimeController.text}.
+        Affected services include: ${_affectedServicesController.text}.
+        Thank you for your attention.
+        """;
 
-      print("The annuncemtn is " + announcement);
+      print("The announcement is: " + announcement);
+
 
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => TextToAnnouncementService(text: announcement)));

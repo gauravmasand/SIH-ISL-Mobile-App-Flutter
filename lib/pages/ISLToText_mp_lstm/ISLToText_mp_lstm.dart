@@ -10,6 +10,7 @@ import 'package:image/image.dart' as img;
 import 'dart:convert';
 
 import '../../Services/ISlToTextServices.dart';
+import '../../Services/PermissionServices.dart';
 import '../../constants.dart';
 
 class ISLToText_mp_lstm extends StatefulWidget {
@@ -37,7 +38,9 @@ class _ISLToText_mp_lstmState extends State<ISLToText_mp_lstm> {
   @override
   void initState() {
     super.initState();
-    _initializeServices();
+    PermissionServices.requestPermissions(
+      action: _initializeServices()
+    );
   }
 
   Future<void> _initializeServices() async {
@@ -77,9 +80,9 @@ class _ISLToText_mp_lstmState extends State<ISLToText_mp_lstm> {
 
   Future<void> _initializeWebSocket() async {
     final clientId = await AuthService.getToken();
-    print("The client token is $clientId");
+    print("the base url is $islToTextBaseURl. The client token is $clientId");
     _channel = WebSocketChannel.connect(
-      Uri.parse('$islToTextBaseURl/ws/${clientId}'),
+      Uri.parse('$islToTextBaseURl/ws/wsclientid'),
     );
 
     _channel.stream.listen(_handleMessage, onError: (error) {
@@ -140,8 +143,8 @@ class _ISLToText_mp_lstmState extends State<ISLToText_mp_lstm> {
 
       // Fix rotation based on camera direction
       final img.Image rotatedFrame = _isFrontCamera
-          ? img.copyRotate(frame, angle: -90)  // Rotate counterclockwise for front camera
-          : img.copyRotate(frame, angle: 90);  // Rotate clockwise for back camera
+          ? img.copyRotate(frame, angle: -90)
+          : img.copyRotate(frame, angle: 90);
 
       final List<int> jpgData = img.encodeJpg(rotatedFrame, quality: 65);
       final String base64Image = base64Encode(jpgData);
@@ -352,46 +355,10 @@ class _ISLToText_mp_lstmState extends State<ISLToText_mp_lstm> {
     );
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     backgroundColor: Colors.black,
-  //     body: !_isInitialized
-  //         ? _buildLoadingState()
-  //         : !_isConnected
-  //         ? _buildErrorState()
-  //         : Stack(
-  //       children: [
-  //         // Camera Preview
-  //         Positioned.fill(
-  //           child: AspectRatio(
-  //             aspectRatio: _cameraController.value.aspectRatio,
-  //             child: CameraPreview(_cameraController),
-  //           ),
-  //         ),
-  //         // Camera Switch Button
-  //         Positioned(
-  //           right: 16,
-  //             top: 34,
-  //             child: _buildCameraSwitchButton()
-  //         ),
-  //         // Prediction Overlay
-  //         Positioned(
-  //           left: 12,
-  //           right: 12,
-  //           bottom: 16,
-  //           child: _buildPredictionOverlay(),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   @override
   void dispose() {
     _cameraController.dispose();
     _channel.sink.close();
     super.dispose();
   }
-
 }

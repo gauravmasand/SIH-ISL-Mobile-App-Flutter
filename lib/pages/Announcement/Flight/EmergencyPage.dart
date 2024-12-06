@@ -209,41 +209,41 @@ class _EmergencyPageState extends State<EmergencyPage> {
   }) {
     // Start the announcement with a formal greeting and emergency type
     String announcement = '''
-      Attention, all passengers and crew. We have an emergency situation there is $emergencyType,
-      classified as $severityLevel severity.
-      ''';
+  Attention, all passengers and crew. We have an emergency situation. There is a $emergencyType,
+  classified as $severityLevel severity.
+  ''';
 
-    // Mention affected areas
-    announcement += 'The affected areas are $affectedAreas.\n';
+// Mention affected areas
+    announcement += 'Affected areas: $affectedAreas.\n';
 
-    // Add required actions
-    announcement += 'We request you to take the follow $requiredActions.\n';
+// Add required actions
+    announcement += 'Please take the following actions: $requiredActions.\n';
 
-    // Mention assembly points if provided
+// Mention assembly points if provided
     if (assemblyPoints != null && assemblyPoints.isNotEmpty) {
-      announcement += 'Please proceed to the following $assemblyPoints assembly points.\n';
+      announcement += 'Proceed to the following assembly points: $assemblyPoints.\n';
     }
 
-    // Mention safety instructions
-    announcement += 'For your safety, please $safetyInstructions.\n';
+// Mention safety instructions
+    announcement += 'For your safety, please follow these instructions: $safetyInstructions.\n';
 
-    // Add emergency contact numbers for assistance
-    announcement += 'If you need further assistance, contact $contactNumbers.\n';
+// Add emergency contact numbers for assistance
+    announcement += 'For assistance, contact: $contactNumbers.\n';
 
-    // Add updates/status
-    announcement += 'Current status is $updates.\n';
+// Add updates/status
+    announcement += 'Current status: $updates.\n';
 
-    // Mention alternative routes if applicable
+// Mention alternative routes if applicable
     if (alternativeRoutes != null && alternativeRoutes.isNotEmpty) {
-      announcement += '$alternativeRoutes is alternative exits.\n';
+      announcement += 'Alternative exits: $alternativeRoutes.\n';
     }
 
-    // End with a closing statement
-    announcement += 'Thank you for your cooperation. Please remain calm and follow instructions from the crew.';
+// End with a closing statement
+    announcement += 'Thank you for your cooperation. Please remain calm and follow the crew’s instructions.';
 
-    print("This is log of security announcement: " + announcement);
+    print("Security Announcement Log: " + announcement);
 
-    // Return the formatted announcement
+// Return the formatted announcement
     return announcement.trim();
   }
 

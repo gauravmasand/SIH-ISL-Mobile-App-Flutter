@@ -41,7 +41,6 @@ class AuthService {
         'otp': otp,
       }),
     );
-
     return jsonDecode(response.body);
 
   }

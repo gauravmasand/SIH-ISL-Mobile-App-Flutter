@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:isl/pages/LearnISL/LearnISL.dart';
 import 'package:isl/pages/TravelPage/TravelPage.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../main.dart';
 import '../Announcement/AnnouncementBasePage.dart';
 import '../GuideAndHelp/GuideAndHelp.dart';
@@ -18,6 +20,7 @@ class MainHomePage extends StatefulWidget {
 }
 
 class _MainHomePageState extends State<MainHomePage> {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -214,7 +217,9 @@ class _MainHomePageState extends State<MainHomePage> {
                     title: 'Learn ISL',
                     icon: Icons.school,
                     color: Colors.teal,
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => LearnISL()));
+                    },
                   ),
                   FeatureCard(
                     title: 'Guide & Help',

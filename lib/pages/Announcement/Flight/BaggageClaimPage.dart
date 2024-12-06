@@ -231,20 +231,20 @@ class _BaggageClaimAnnouncementPageState extends State<BaggageClaimAnnouncementP
     String? otherAirline,
   }) {
     // Start with a greeting and airline information
-    String announcement = 'Attention, passengers. ';
+    String announcement = 'Hello, passengers. ';
     announcement += otherAirline != null && airline == 'Other'
-        ? 'This is a baggage claim announcement for $otherAirline Airlines flight $flightNumber.'
-        : 'This is a baggage claim announcement for $airline flight $flightNumber.';
+        ? '$otherAirline flight $flightNumber.'
+        : '$airline flight $flightNumber.';
 
     // Add origin and baggage details
-    announcement += ' The flight arriving from $originCity has its baggage available at carousel $carouselNumber.';
+    announcement += ' Baggage from $originCity is at carousel $carouselNumber.';
 
     // Mention baggage type
-    announcement += ' Please proceed to the $baggageType baggage claim area.';
+    announcement += ' Go to $baggageType baggage claim area.';
 
     // Add expected duration if provided
     if (expectedDuration != null && expectedDuration.isNotEmpty) {
-      announcement += ' The baggage is expected to arrive in approximately $expectedDuration.';
+      announcement += ' Baggage arrives in $expectedDuration.';
     }
 
     // Add special instructions if provided
@@ -253,17 +253,17 @@ class _BaggageClaimAnnouncementPageState extends State<BaggageClaimAnnouncementP
     }
 
     // Add arrival time
-    announcement += ' The flight landed at ${arrivalTime.format(context)}.';
+    announcement += ' Flight landed at ${arrivalTime.format(context)}.';
 
-    // Closing statement
-    announcement +=
-    ' Thank you for flying with us. We hope you had a pleasant journey.';
+      // Closing statement
+    announcement += ' Thank you. We hope you had a pleasant journey.';
 
     // Log for debugging
-    print("Generated Baggage Claim Announcement: $announcement");
+    print("Generated ISL Baggage Claim Announcement: $announcement");
 
     // Return the final announcement
     return announcement.trim();
+
   }
 
   void _submitForm() {

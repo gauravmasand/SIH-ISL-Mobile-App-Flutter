@@ -200,44 +200,44 @@ class _FacilityInfoPageState extends State<FacilityInfoPage> {
     String announcement = 'Attention, everyone. ';
     announcement += 'This is an update for the $facilityArea area.';
 
-    // Mention the status
-    announcement += ' The current status is: $status.';
+// Mention the status
+    announcement += ' Current status: $status.';
 
-    // Mention impact level
-    announcement += ' The impact level is classified as $impactLevel.';
+// Mention impact level
+    announcement += ' Impact level: $impactLevel.';
 
-    // Mention affected services
-    announcement += ' The following services are affected: $affectedServices.';
+// Mention affected services
+    announcement += ' Affected services: $affectedServices.';
 
-    // Add duration if provided
+// Add duration if provided
     if (duration != null && duration.isNotEmpty) {
-      announcement += ' The expected duration of this status is $duration.';
+      announcement += ' Expected duration: $duration.';
     }
 
-    // Add alternative options if provided
+// Add alternative options if provided
     if (alternativeOptions != null && alternativeOptions.isNotEmpty) {
-      announcement += ' Alternative options available: $alternativeOptions.';
+      announcement += ' Alternative options: $alternativeOptions.';
     }
 
-    // Add special instructions if provided
+// Add special instructions if provided
     if (specialInstructions != null && specialInstructions.isNotEmpty) {
       announcement += ' Special instructions: $specialInstructions.';
     }
 
-    // Add contact information if provided
+// Add contact information if provided
     if (contactInformation != null && contactInformation.isNotEmpty) {
-      announcement += ' For further assistance, please contact: $contactInformation.';
+      announcement += ' For assistance, contact: $contactInformation.';
     }
 
-    // Closing statement
-    announcement +=
-    ' Thank you for your understanding and cooperation. We apologise for any inconvenience caused.';
+// Closing statement
+    announcement += ' Thank you for your cooperation. Apologies for any inconvenience caused.';
 
-    // Log for debugging
+// Log for debugging
     print("Generated Facility Info Announcement: $announcement");
 
-    // Return the final announcement
+// Return the final announcement
     return announcement.trim();
+
   }
 
   void _submitForm() {

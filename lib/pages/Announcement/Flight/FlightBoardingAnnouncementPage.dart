@@ -219,30 +219,30 @@ class _FlightBoardingAnnouncementPageState extends State<FlightBoardingAnnouncem
     String? otherAirline,
   }) {
     // Start with a greeting and airline information
-    String announcement = 'Attention, passengers. ';
+    // Start with a greeting and airline information
+    String announcement = 'Hello, passengers. ';
     announcement += otherAirline != null && airline == 'Other'
-        ? 'This is a boarding announcement for $otherAirline Airlines flight $flightNumber.'
-        : 'This is a boarding announcement for $airline flight $flightNumber.';
+        ? 'Boarding for $otherAirline flight $flightNumber.'
+        : 'Boarding for $airline flight $flightNumber.';
 
     // Add origin and destination details
-    announcement += ' The flight will be departing from $from and arriving at $to.';
+    announcement += ' Flight from $from to $to.';
 
     // Add boarding time and date
-    announcement +=
-    ' Boarding is scheduled to begin on ${boardingDate.toString().split(' ')[0]} at ${boardingTime.format(context)}.';
+    announcement += ' Boarding starts on ${boardingDate.toString().split(' ')[0]} at ${boardingTime.format(context)}.';
 
     // Add gate information
-    announcement += ' Passengers are requested to proceed to gate $gateNumber.';
+    announcement += ' To gate $gateNumber.';
 
     // Closing statement
-    announcement +=
-    ' Please ensure you have your boarding passes and identification ready. Thank you for flying with us, and we wish you a pleasant journey.';
+    announcement += ' Keep boarding pass and ID ready. Thank you. Safe journey.';
 
     // Log for debugging
-    print("Generated Boarding Announcement: $announcement");
+    print("Generated ISL Boarding Announcement: $announcement");
 
     // Return the final announcement
     return announcement.trim();
+
   }
 
   void _submitForm() {
