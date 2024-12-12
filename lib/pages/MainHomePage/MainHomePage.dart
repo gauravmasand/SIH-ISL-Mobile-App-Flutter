@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:isl/pages/LearnISL/LearnISL.dart';
 import 'package:isl/pages/TravelPage/TravelPage.dart';
@@ -5,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../main.dart';
 import '../Announcement/AnnouncementBasePage.dart';
 import '../GuideAndHelp/GuideAndHelp.dart';
+import '../ISLExpertChatPage/ISLChatPage.dart';
 import '../ISLToText_mp_lstm/ISLToText_mp_lstm.dart';
 import '../SettingsPage/SettingsPage.dart';
 import '../TextToISL/TextToISL.dart';
@@ -36,10 +38,6 @@ class _MainHomePageState extends State<MainHomePage> {
         centerTitle: true,
         backgroundColor: Color(0xFFF8F9FA), // Soft neutral background
         elevation: 0, // No elevation for a minimalist appearance
-        // leading: IconButton(
-        //   icon: const Icon(Icons.arrow_back, color: Color(0xFF444444)),
-        //   onPressed: () => Navigator.pop(context),
-        // ),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings, color: Color(0xFF444444)),
@@ -47,7 +45,7 @@ class _MainHomePageState extends State<MainHomePage> {
               // Navigate to settings screen
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SettingsPage()),
+                MaterialPageRoute(builder: (context) => SettingsPage()),
               );
             },
           ),
@@ -59,6 +57,13 @@ class _MainHomePageState extends State<MainHomePage> {
         ),
         toolbarHeight: 70, // Taller toolbar for better proportions
         shadowColor: Colors.grey.withOpacity(0.15), // Subtle shadow
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen()));
+        },
+        backgroundColor: const Color(0xFF444444),
+        child: const Icon(CupertinoIcons.chat_bubble, color: Colors.white),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -213,6 +218,14 @@ class _MainHomePageState extends State<MainHomePage> {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => YouTubeToISLPage()));
                     },
                   ),
+                  // FeatureCard(
+                  //   title: 'Chat to learn!',
+                  //   icon: Icons.help_outline,
+                  //   color: Colors.blue,
+                  //   onTap: () {
+                  //     Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen()));
+                  //   },
+                  // ),
                   FeatureCard(
                     title: 'Learn ISL',
                     icon: Icons.school,

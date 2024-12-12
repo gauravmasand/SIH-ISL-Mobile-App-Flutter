@@ -211,13 +211,9 @@ class _TravelPageState extends State<TravelPage> {
   }
 
   void initWebView(String inputText) async {
-    final String baseUrl = 'http://64.227.148.189:55055';
+    // final String baseUrl = 'http://64.227.148.189:55055';
     final String text = inputText.isNotEmpty ? customUrlEncode(inputText) : '';
-    final String encodedUrl = '$baseUrl/text-from-url?text=$text';
-
-    print("check pass 1");
-
-    print("check pass 2");
+    final String encodedUrl = '$textToISLBaseURl/text-from-url?text=$text';
 
     print(encodedUrl);
 
@@ -243,7 +239,6 @@ class _TravelPageState extends State<TravelPage> {
     // Clear the TextField after submission
     _textController.clear();
   }
-
 
   @override
   void initState() {
@@ -326,7 +321,11 @@ class _TravelPageState extends State<TravelPage> {
                         padding: const EdgeInsets.all(16),
                         child: _buildInputArea(),
                       ),
-                      Expanded(child: _buildQuickPhrases()),
+                      Padding(
+                        padding: EdgeInsets.only(left: 24, right: 24),
+                        child: ElevatedButton(onPressed: () => _showQuickPhrasesDialog(context), child: Text("Quick Conversation")),
+                      ),
+                      // Expanded(child: _buildQuickPhrases()),
                     ],
                   ],
                 ),
@@ -549,124 +548,129 @@ class _TravelPageState extends State<TravelPage> {
     );
   }
 
-  Widget _buildQuickPhrases() {
-    return Container(
-      height: 290,
-      margin:  const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.only(left: 16, right: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 12),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              children: quickPhrases.map((category) {
-                String categoryName = category.keys.first;
-                List<String> phrases = category.values.first;
-                return Container(
-                  width: 260,
-                  margin: const EdgeInsets.only(right: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+  void _showQuickPhrasesDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: const Offset(0, -3),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor.withOpacity(0.1),
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(16),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              _getCategoryIcon(categoryName),
-                              color: Theme.of(context).primaryColor,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              categoryName,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).primaryColor,
-                              ),
-                            ),
-                          ],
-                        ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Handle indicator
+                  Container(
+                    width: 50,
+                    height: 6,
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                  // Title
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                      'Quick Phrases',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
                       ),
-                      Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: phrases.length,
-                          itemBuilder: (context, index) {
-                            return InkWell(
-                              onTap: () {
-                                // Handle phrase selection
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: quickPhrases.map((categoryMap) {
+                        String category = categoryMap.keys.first;
+                        List<String> phrases = categoryMap[category]!;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                category,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.deepPurple,
                                 ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 10,
+                                runSpacing: 10,
+                                children: phrases.map((phrase) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      _textController.text = phrase;
+                                      Navigator.pop(context);
+                                      setState(() {});
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.deepPurple.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: Colors.deepPurple.withOpacity(0.3),
+                                          width: 1,
+                                        ),
+                                      ),
                                       child: Text(
-                                        phrases[index],
-                                        style: const TextStyle(
-                                          fontSize: 15,
+                                        phrase,
+                                        style: TextStyle(
+                                          color: Colors.deepPurple[800],
+                                          fontSize: 14,
                                         ),
                                       ),
                                     ),
-                                    Icon(
-                                      Icons.arrow_forward_ios,
-                                      size: 14,
-                                      color: Colors.grey[400],
-                                    ),
-                                  ],
-                                ),
+                                  );
+                                }).toList(),
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
-      ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
-  }
-
-  IconData _getCategoryIcon(String category) {
-    switch (category.toLowerCase()) {
-      case 'transport':
-        return Icons.directions_bus;
-      case 'emergency':
-        return Icons.emergency;
-      case 'general':
-        return Icons.chat_bubble;
-      default:
-        return Icons.category;
-    }
   }
 
   @override

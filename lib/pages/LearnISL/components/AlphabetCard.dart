@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../LearningPages/LearnISLAlphabetsPage.dart';
-import '../models/CategoryModel.dart';
+class AlphabetCard extends StatelessWidget {
+  final String alphabet;
+  final String image;
 
-class CategoryCard extends StatelessWidget {
-  final CategoryModel category;
-
-  const CategoryCard({super.key, required this.category});
+  const AlphabetCard({super.key, required this.alphabet, required this.image});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +25,10 @@ class CategoryCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => category.detailedPage));
+            // Add navigation or any functionality when the card is tapped
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('You selected $alphabet')),
+            );
           },
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -37,20 +38,20 @@ class CategoryCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: category.color.withOpacity(0.1),
+                    color: Colors.blue.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    category.icon,
-                    color: category.color,
-                    size: 40,
+                  child: Image.asset(
+                    image,
+                    height: 50,
+                    width: 50,
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  category.title,
+                  alphabet,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF444444),
                   ),
@@ -58,9 +59,9 @@ class CategoryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  category.description,
+                  'ISL Sign for $alphabet',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 14,
                     color: Colors.grey.shade600,
                   ),
                   textAlign: TextAlign.center,

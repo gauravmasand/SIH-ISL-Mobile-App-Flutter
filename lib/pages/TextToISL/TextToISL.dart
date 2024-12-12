@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../constants.dart';
+
 class TextToISL extends StatefulWidget {
   const TextToISL({Key? key}) : super(key: key);
 
@@ -16,7 +18,7 @@ class _TextToISLState extends State<TextToISL> {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(Uri.parse('http://64.227.148.189:55055/'));
+      ..loadRequest(Uri.parse(textToISLBaseURl));
   }
 
   @override

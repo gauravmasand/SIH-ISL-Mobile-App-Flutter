@@ -5,5 +5,9 @@ const kPrimaryLightColor = Color(0xFFF1E6FF);
 
 const double defaultPadding = 16.0;
 const String authBaseUrl = "http://64.227.150.95:5505/api/auth";
-const String islToTextBaseURl = "ws://64.227.148.189:8001";
-// const String islToTextBaseURl = "ws://172.20.10.7:8000";
+const String textToISLBaseURl = "http://64.227.148.189:55055/"; // deployed
+// const String textToISLBaseURl = "http://172.16.214.74:55055/"; // local
+// const String islToTextBaseURl = "ws://64.227.148.189:8001";
+const String islToTextBaseURl = "ws://172.20.10.7:8000";
+
+

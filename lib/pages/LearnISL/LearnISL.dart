@@ -1,7 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:isl/pages/LearnISL/LearningPages/LearnEmotionsPage.dart';
 
 import '../ISLExpertChatPage/ISLChatPage.dart';
+import 'LearningPages/LearnColors.dart';
+import 'LearningPages/LearnDailyPhrasesPage.dart';
+import 'LearningPages/LearnFamilyMembers.dart';
+import 'LearningPages/LearnISLAlphabetsPage.dart';
+import 'LearningPages/LearnISLNumbersPage.dart';
 import 'components/CategoryCard.dart';
 import 'models/CategoryModel.dart';
 
@@ -19,36 +25,42 @@ class _LearnISLState extends State<LearnISL> {
       icon: Icons.abc,
       color: Colors.blue,
       description: 'Learn ISL alphabet signs step by step',
+      detailedPage: LearnISLAlphabetsPage(),
     ),
     CategoryModel(
       title: 'Numbers',
       icon: Icons.numbers,
       color: Colors.green,
       description: 'Master numerical hand signs',
+      detailedPage: LearnISLNumbersPage(),
     ),
     CategoryModel(
       title: 'Daily Phrases',
       icon: Icons.chat_bubble_outline,
       color: Colors.orange,
       description: 'Common conversational signs',
+      detailedPage: LearnDailyPhrasesPage(),
     ),
     CategoryModel(
       title: 'Emotions',
       icon: Icons.sentiment_satisfied_alt,
       color: Colors.purple,
       description: 'Express feelings through signs',
+      detailedPage: LearnEmotionsPage(),
     ),
     CategoryModel(
       title: 'Family',
       icon: Icons.family_restroom,
       color: Colors.teal,
       description: 'Signs for family members',
+      detailedPage: LearnFamilyPage(),
     ),
     CategoryModel(
       title: 'Colors',
       icon: Icons.palette,
       color: Colors.pink,
       description: 'Learn color representation signs',
+      detailedPage: LearnColorsPage(),
     ),
   ];
 
@@ -149,7 +161,7 @@ class _LearnISLState extends State<LearnISL> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ISLExpertChatPage()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen()));
         },
         backgroundColor: const Color(0xFF444444),
         child: const Icon(CupertinoIcons.chat_bubble, color: Colors.white),
